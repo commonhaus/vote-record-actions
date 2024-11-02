@@ -31,19 +31,19 @@ export function processVote(voteRoot: string, voteData: VoteData): void {
                 .map(x => `"${x}"`).join(", "),
     });
     
-    const relativeVotePath = `${voteRoot}/results/${repo}/`;
-    const relativeAssetPath = `${voteRoot}/raw/${repo}/`
+    const resultsVotePath = `${voteRoot}/results/${repo}/`;
+    const rawDataPath = `${voteRoot}/raw/${repo}/`
     
-    if (!existsSync(relativeVotePath)) {
-        mkdirSync(relativeVotePath, { recursive: true });
+    if (!existsSync(resultsVotePath)) {
+        mkdirSync(resultsVotePath, { recursive: true });
     }
-    if (!existsSync(relativeAssetPath)) {
-        mkdirSync(relativeAssetPath, { recursive: true });
+    if (!existsSync(rawDataPath)) {
+        mkdirSync(rawDataPath, { recursive: true });
     }
     
-    console.log(`Writing data to ${relativeAssetPath}${voteData.number}.json`);
-    writeFileSync(`${relativeAssetPath}${voteData.number}.json`, JSON.stringify(voteData, null, 2));
+    console.log(`Writing data to ${rawDataPath}${voteData.number}.json`);
+    writeFileSync(`${rawDataPath}${voteData.number}.json`, JSON.stringify(voteData, null, 2));
     
-    console.log(`Writing record to ${relativeVotePath}${voteData.number}.md`);
-    writeFileSync(`${relativeVotePath}${voteData.number}.md`, data);    
+    console.log(`Writing record to ${resultsVotePath}${voteData.number}.md`);
+    writeFileSync(`${resultsVotePath}${voteData.number}.md`, data);    
 }

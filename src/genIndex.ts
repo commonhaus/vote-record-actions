@@ -11,6 +11,7 @@ const scriptDir = process.cwd();
 
 const voteRoot = argv[2];
 const sourcePath = `${voteRoot}/raw`;
+const resultPath = `${voteRoot}/results`;
 const targetFile = `${voteRoot}/README.md`;
 
 interface ContentMap {
@@ -53,7 +54,8 @@ try {
         .sort((a, b) => a.filePath.toLowerCase().localeCompare(b.filePath.toLowerCase()))
         .map(x => {
             x.content.missingGroupActors = x.content.missingGroupActors || [];
-            x.filePath = x.filePath.replace('json', 'md');
+            x.filePath = x.filePath.replace('json', 'md').replace(sourcePath, resultPath);
+            console.log(x);
             return x;
         });
 
