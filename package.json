@@ -1,8 +1,8 @@
 {
   "scripts": {
     "build": "node esbuild.config.mjs",
-    "index": "npm run build && node ./dist/genIndex.mjs",
-    "votes": "npm run build && node ./dist/votes.mjs",
+    "index": "npm run build && node ./dist/genIndex.js",
+    "votes": "npm run build && node ./dist/votes.js",
     "repair": "npm run build && node ./dist/repair.js"
   },
   "type": "module",
