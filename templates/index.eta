@@ -1,0 +1,24 @@
+# Open votes
+
+*Last updated: <%= new Date().toUTCString() %>[^1]*
+
+<table>
+<tr><th>Progress</th><th>Details</th></tr>
+<%- it.forEach(function(e) { %>
+<%- const vote = e.content;
+    const filePath = e.filePath; %>
+<tr>
+<td rowspan="3" valign="top"><a href="<%= filePath %>"><img src="<%= vote.progress %>" alt="<%= Math.floor((vote.groupVotes/vote.groupSize)*100) %>% responses"></a></td>
+<td><%= vote.repoName %> #<%= vote.number %></td>
+</tr><tr>
+<td><a href="https://github.com/<%= vote.repoName %>/issues/<%= vote.number %>"><%= vote.title %></a></td>
+</tr><tr>
+<td>Missing: <%- if (vote.missingGroupActors && vote.missingGroupActors.length) { -%>
+<%~ vote.missingGroupActors.map(x => `<a href="${x.url}">${x.login}</a>`).join(", ") %>
+<%- } // end if -%>
+</td>
+</tr>
+<%- }); // end for each open vote %>
+</table>
+
+[^1]: Content is updated every 3 hours while the vote is open, unless there are other activities that trigger events. Reactions do not trigger events.

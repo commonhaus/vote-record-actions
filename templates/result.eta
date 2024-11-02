@@ -1,0 +1,69 @@
+---
+commentId: <%= it.voteData.commentId %>
+aliases: ["<%= it.repo %>#<%= it.voteData.number %>"]
+tags: [<%~ it.tags %>]
+---
+## Results for [<%= it.repo %> #<%= it.voteData.number %>](<%= it.voteData.github %>)
+
+<%- if (!it.voteData.closed) { %>
+<a href="#vote-results"><img src="<%= it.voteData.progress %>" alt="<%= Math.floor((it.voteData.groupVotes/it.voteData.groupSize)*100) %>% responses"></a>  
+<%- } %>
+*Last updated*: <%= it.voteData.updated.replace('T', ' ').replace('Z', ' (UTC)') %>
+
+<%- if (it.voteData.manualCloseComments) { %>
+
+This vote was [closed](<%= it.voteData.manualCloseComments.url %>) by [<%= it.voteData.manualCloseComments.author.login %>](<%= it.voteData.manualCloseComments.author.url %>) with the following comments on <%= it.voteData.manualCloseComments.createdAt.split('T')[0] %>:
+
+<%~ it.resultBody %>
+
+---
+<%- } %>
+
+- **Title**: [<%= it.voteData.title.trim() %>](<%= it.voteData.github %>)
+- **Method**: <%= it.voteData.voteType %>
+- **Group**: <%= it.voteData.group %> (<%= it.voteData.groupSize %> members)
+- **Response threshold**: <%= it.voteData.votingThreshold %>[^2]
+
+### Vote Results
+
+| Response Group[^3] | Total Votes | Team Votes | Voting members |
+|---------------------|-------------|------------|----------------|
+<%- for (const [k, category] of it.sortedCategories) {
+    const reactions = category.reactions.length ? ` (${category.reactions.join(", ")})` : '';
+    const team = category.team.map(v => `[${v.login}](${v.url})`).join(', ');
+%>
+| <%= k %><%= reactions %> | <%= category.total %> | <%= category.teamTotal %> | <%= team %> |
+<%- } %>
+| **Total** | <%= it.voteData.countedVotes %> | <%= it.voteData.groupVotes %> |  |
+<%- if (it.voteData.otherVotes && it.voteData.otherVotes.length) { %>
+
+Additional input (🙏 🥰 🙌):
+<%= it.voteData.otherVotes.map(v => `[${v.login}](${v.url})`).join(', ') %>
+<%- } // end if %>
+<%- if (it.voteData.missingGroupActors && it.voteData.missingGroupActors.length) { %>
+
+The following votes are missing:
+<%= it.voteData.missingGroupActors.map(v => `[${v.login}](${v.url})`).join(', ') %>
+<% } // end if %>
+<%- if (it.voteData.duplicates && it.voteData.duplicates.length) { %>
+
+The following votes were not counted (duplicate votes, using most recent):
+<%= it.voteData.duplicates.map(v => `[${v.login}](${v.url}) (${v.reaction})`).join(', ') %>
+<%- } // end if %>
+<%- if (it.voteData.ignored) { %>
+
+The following reactions were not counted:
+<%= it.voteData.ignored.reactions.join(", ") %>
+<%- } // end if %>
+
+<%- if (!it.voteData.closed) { %>
+[^1]: Content is updated at least every 3 hours while the vote is open, unless there are other activities that trigger events. Reactions do not trigger events.
+
+<%- } // end if %>
+[^2]: The response threshold is the minimum number of votes required to consider the vote valid without a meeting.
+If the total number of votes is less than the response threshold, a meeting will be held,
+and [normal quorum rules](https://www.commonhaus.org/bylaws/cf-council.html#quorum) will apply.
+
+[^3]: For votes using Martha's rules, this will be "approve", "ok", and "revise".
+For manual, reaction-based votes, reactions will be appear individually.
+For manual votes based on comment responses, there will be one "comment" group.

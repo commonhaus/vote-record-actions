@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "index": "npm run build && node ./dist/genIndex.mjs",
+    "votes": "npm run build && node ./dist/votes.mjs",
+    "repair": "npm run build && node ./dist/repair.js"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.4.5",
+    "yaml": "^2.3.4"
+  },
+  "dependencies": {
+    "eta": "^3.4.0"
+  }
+}
