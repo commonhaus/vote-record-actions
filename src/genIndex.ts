@@ -54,7 +54,9 @@ try {
         .sort((a, b) => a.filePath.toLowerCase().localeCompare(b.filePath.toLowerCase()))
         .map(x => {
             x.content.missingGroupActors = x.content.missingGroupActors || [];
-            x.filePath = x.filePath.replace('json', 'md').replace(sourcePath, resultPath);
+            x.filePath = x.filePath.replace('json', 'md')
+                    .replace(sourcePath, resultPath)
+                    .replace(voteRoot, '.');
             console.log(x);
             return x;
         });
