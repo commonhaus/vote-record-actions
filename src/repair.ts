@@ -1,8 +1,8 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { VoteData } from './@types';
 import path from 'node:path';
 import { argv } from 'node:process';
-import { VoteData } from './@types';
-import { processVote } from './voteCommon';
+import { fetchVoteData, processVote } from './voteCommon';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 
 // [-0---] [-1-] [-2----------]
 // npm run votes "${VOTE_ROOT}"
@@ -23,9 +23,9 @@ console.log(`Found ${jsonFiles.length} votes in ${votesDir}`);
 // Process each JSON file
 jsonFiles.forEach(filePath => {
     const fileContent = readFileSync(filePath, 'utf-8');
-    const voteData: VoteData = JSON.parse(fileContent);
+    let voteData: VoteData = JSON.parse(fileContent);
     if (voteData && voteData.commentId) {
-        delete voteData.type;
+        voteData = fetchVoteData(voteData.commentId);
         processVote(voteRoot, voteData);
     } else {
         console.warn(`No commentId found in file ${filePath}`);
