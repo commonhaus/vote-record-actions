@@ -88,6 +88,7 @@ export function fetchVoteData(commentId: string): VoteData {
     voteData.closed = item.closed;
     if (item.closed) {
         voteData.closedAt = item.closedAt;
+        voteData.tags.push('closed');
     }
     if (voteData.missingGroupActors) {
         for(const actor of voteData.missingGroupActors) {
