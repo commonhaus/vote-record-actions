@@ -17,17 +17,16 @@ query($commentId: ID!) {
                 title
                 url
             }
-            body
-            createdAt
-            id
-            updatedAt
-            url
-        }
-        ... on DiscussionComment {
             id
             author {
                 login
             }
+            body
+            createdAt
+            updatedAt
+            url
+        }
+        ... on DiscussionComment {
             discussion {
                 id
                 closed
@@ -44,9 +43,12 @@ query($commentId: ID!) {
                 title
                 url
             }
+            id
+            author {
+                login
+            }
             body
             createdAt
-            id
             updatedAt
             url
         }
