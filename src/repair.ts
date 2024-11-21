@@ -15,7 +15,8 @@ const voteRoot = argv[2];
 const votesDir = `${voteRoot}/raw/`;
 
 const all = argv.length > 3 && argv[3] === 'all';
-const repositories = all && argv.length > 4 ? argv.slice(4) : ['commonhaus/foundation'];
+const refresh = argv.length > 3 && argv[3] === 'refresh';
+const repositories = refresh && argv.length > 4 ? argv.slice(4) : ['commonhaus/foundation'];
 const seen: string[] = []; 
 
 function labelsToString(labels: { name: string }[]) {
@@ -47,7 +48,7 @@ function refreshItems(itemQuery: string, repository: string) {
     }
 }
 
-if (all) {
+if (refresh) {
     repositories.forEach(repo => {
         console.log("Refreshing items for", repo);
         refreshItems(discussQuery, repo);
