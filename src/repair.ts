@@ -1,10 +1,10 @@
 import { VoteData } from './@types';
 import path from 'node:path';
-import { argv } from 'node:process';
-import { fetchVoteData, processVote } from './voteCommon';
+import { argv, exit } from 'node:process';
+import { fetchVoteData, findFiles, processVote } from './voteCommon';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 
-// [-0---] [-1-] [-2----------]
+// [-0---] [-1-] [-2----------] [all]
 // npm run votes "${VOTE_ROOT}"
 
 if (argv.length < 3) {
@@ -13,41 +13,27 @@ if (argv.length < 3) {
 }
 
 const voteRoot = argv[2];
-const votesDir = `${voteRoot}/raw/`
+const votesDir = `${voteRoot}/raw/`;
+
+const all = argv.length > 3 && argv[3] === 'all';
 
 const jsonFiles = [];
 findFiles(votesDir, jsonFiles);
 
-console.log(`Found ${jsonFiles.length} votes in ${votesDir}`);
+console.log(`Found ${jsonFiles.length} votes in ${votesDir} (all: ${all})`);
 
 // Process each JSON file
 jsonFiles.forEach(filePath => {
     const fileContent = readFileSync(filePath, 'utf-8');
     let voteData: VoteData = JSON.parse(fileContent);
     if (voteData && voteData.commentId) {
-        voteData = fetchVoteData(voteData.commentId);
-        processVote(voteRoot, voteData);
+        if (all || !voteData.closed) {
+            voteData = fetchVoteData(voteData.commentId);
+            processVote(voteRoot, voteData);
+        } else {
+            console.log(` x  closed ${voteData.repoName}#${voteData.number} (${voteData.commentId})`);
+        }
     } else {
         console.warn(`No commentId found in file ${filePath}`);
     }
 });
-
-function findFiles(from: string, fileList: string[]) {
-    try {
-        console.log('reading path ', from);
-        readdirSync(from).forEach(file => {
-            const filePath = path.join(from, file);
-            if (file.endsWith(".json")) {
-                fileList.push(filePath);
-            } else if ( !file.endsWith(".svg") ){
-                const stat = statSync(filePath);
-                if (stat.isDirectory()) {
-                    // RECURSE / TRAVERSE
-                    findFiles(filePath, fileList);
-                }
-            }
-        });
-    } catch (err) {
-        console.error(err);
-    }
-}

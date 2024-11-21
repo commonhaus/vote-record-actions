@@ -3,8 +3,9 @@ import path from 'node:path';
 import { argv } from 'node:process';
 import { Eta } from "eta"
 import { VoteData } from './@types';
+import { findFiles } from './voteCommon';
 
-// [-0---] [-1----] [-2-------]
+// [-0---] [-1----] [-2---------]
 // npm run genIndex "${VOTE_ROOT}"
 
 const scriptDir = process.cwd();
@@ -15,49 +16,39 @@ const resultPath = `${voteRoot}/results`;
 const targetFile = `${voteRoot}/README.md`;
 
 interface ContentMap {
-    content: VoteData;
+    voteData: VoteData;
     filePath: string;
 }
 
 const contents: ContentMap[] = [];
 
-function readFiles(from: string) {
+const jsonFiles = [];
+findFiles(voteRoot, jsonFiles);
+
+// Process each JSON file
+jsonFiles.forEach(filePath => {
     try {
-        const files = readdirSync(from);
-        files.forEach(file => {
-            const filePath = path.join(from, file);
-            if (file.endsWith(".json")) {
-                console.log(`reading ${filePath}`);
-                var data = readFileSync(filePath, 'utf8');
-                const content = data.toString();
-                contents.push({
-                    content: JSON.parse(content),
-                    filePath
-                });
-            } else if ( !file.endsWith(".svg") ){
-                const stat = statSync(filePath);
-                if (stat.isDirectory()) {
-                    readFiles(filePath);
-                }
-            }
-        });
+        const fileContent = readFileSync(filePath, 'utf-8');
+        let voteData: VoteData = JSON.parse(fileContent);
+        if (voteData && voteData.commentId && !voteData.closed) {
+            contents.push({
+                voteData,
+                filePath
+            });
+        }
     } catch (err) {
         console.error(err);
     }
-}
+});
 
 try {
-    readFiles(sourcePath);
-
     const openVotes = contents
-        .filter(x => !x.content.closed)
         .sort((a, b) => a.filePath.toLowerCase().localeCompare(b.filePath.toLowerCase()))
         .map(x => {
-            x.content.missingGroupActors = x.content.missingGroupActors || [];
+            x.voteData.missingGroupActors = x.voteData.missingGroupActors || [];
             x.filePath = x.filePath.replace('json', 'md')
                     .replace(sourcePath, resultPath)
                     .replace(voteRoot, '.');
-            console.log(x);
             return x;
         });
 
@@ -67,9 +58,8 @@ try {
     });
 
     const data = eta.render("./index", openVotes);
+    console.log(`<--  ${targetFile}`);
     writeFileSync(targetFile, data);
 } catch (err) {
     console.error(err);
 }
-
-

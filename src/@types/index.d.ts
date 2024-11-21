@@ -25,6 +25,9 @@ interface Result {
     errors?: Error[];
     data?: {
         node: {
+            author: {
+                login: string;
+            }
             discussion?: Item,
             issue?: Item,
             body: string;

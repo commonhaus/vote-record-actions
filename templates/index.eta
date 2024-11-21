@@ -5,7 +5,7 @@
 <table>
 <tr><th>Progress</th><th>Details</th></tr>
 <%- it.forEach(function(e) { %>
-<%- const vote = e.content;
+<%- const vote = e.voteData;
     const filePath = e.filePath; %>
 <tr>
 <td rowspan="3" valign="top"><a href="<%= filePath %>"><img src="<%= vote.progress %>" alt="<%= Math.floor((vote.groupVotes/vote.groupSize)*100) %>% responses"></a></td>

@@ -1,14 +1,38 @@
 import { Eta } from "eta";
 import path from 'node:path';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { Result, VoteCategory, VoteData } from "./@types";
 import { spawnSync } from 'node:child_process';
 
 const scriptDir = process.cwd();
 const commentQuery = path.join(scriptDir, 'graphql/query.comment.graphql');
 
+export function findFiles(from: string, fileList: string[]) {
+    try {
+        console.log('--> ', from);
+        readdirSync(from).forEach(file => {
+            const filePath = path.join(from, file);
+            if (file.endsWith(".json")) {
+                fileList.push(filePath);
+            } else if ( !file.endsWith(".svg") ){
+                const stat = statSync(filePath);
+                if (stat.isDirectory()) {
+                    // RECURSE / TRAVERSE
+                    findFiles(filePath, fileList);
+                }
+            }
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 export function processVote(voteRoot: string, voteData: VoteData): void {
-    console.log(`Check vote data in comment ${voteData.commentId}`);
+    if (!voteData.commentId) {
+        console.log("    # No commentId found");
+        return;
+    }
+    console.log(`=== ${voteData.repoName}#${voteData.number} - comment ${voteData.commentId}`);
     const repo = voteData.repoName;
 
     const sortedCategories: [string, VoteCategory][] = voteData.categories 
@@ -43,10 +67,10 @@ export function processVote(voteRoot: string, voteData: VoteData): void {
         mkdirSync(rawDataPath, { recursive: true });
     }
     
-    console.log(`Writing data to ${rawDataPath}${voteData.number}.json`);
+    console.log(`<-- ${rawDataPath}${voteData.number}.json`);
     writeFileSync(`${rawDataPath}${voteData.number}.json`, JSON.stringify(voteData, null, 2));
     
-    console.log(`Writing record to ${resultsVotePath}${voteData.number}.md`);
+    console.log(`<-- ${resultsVotePath}${voteData.number}.md`);
     writeFileSync(`${resultsVotePath}${voteData.number}.md`, data);    
 }
 
@@ -68,6 +92,10 @@ export function fetchVoteData(commentId: string): VoteData {
     if (!item) {
         console.error(comment);
         process.exit(1);
+    }
+    if (comment.author.login !== "haus-rules-bot") {
+        console.log("    # Comment was not created by haus-rules-bot");
+        return {} as VoteData;
     }
 
     const match = comment.body.match(/<!-- vote::data ([\s\S]*?)-->/);
@@ -137,7 +165,9 @@ function runGraphQL(commentId: string, filePath: string): string {
     );
 
     const output = new TextDecoder().decode(stdout).trim();
-    console.log(status, filePath, new TextDecoder().decode(stderr));
+    if (status !== 0) {
+        console.log(status, filePath, new TextDecoder().decode(stderr));
+    }
     console.assert(status === 0);
     return output;
 }
@@ -171,8 +201,6 @@ function voteProgress(voteData: VoteData) {
     } else {
         const progress = voteData.groupVotes / requiredVotes;
         const roundedProgress = roundDownToNearest10(progress * 100) / 10; // Convert to percentage and round up
-        console.log("progress", progress, roundedProgress);
-
         url = `https://www.commonhaus.org/votes/progress-${roundedProgress}.svg`;
     }
     return url;

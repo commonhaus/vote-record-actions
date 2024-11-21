@@ -7,6 +7,7 @@ import { fetchVoteData, processVote } from './voteCommon';
 // npm run votes "${VOTE_ROOT}" "${INPUT}"
 const voteRoot = argv[2];
 const commentId = argv[3];
+
 const voteData = fetchVoteData(commentId);
 processVote(voteRoot, voteData);
 

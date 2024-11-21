@@ -25,6 +25,9 @@ query($commentId: ID!) {
         }
         ... on DiscussionComment {
             id
+            author {
+                login
+            }
             discussion {
                 id
                 closed
