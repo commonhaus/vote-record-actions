@@ -6,6 +6,9 @@ import { spawnSync } from 'node:child_process';
 
 const scriptDir = process.cwd();
 const commentQuery = path.join(scriptDir, 'graphql/query.comment.graphql');
+export const discussQuery = path.join(scriptDir, 'graphql/query.discussions.graphql');
+export const issueQuery = path.join(scriptDir, 'graphql/query.issues.graphql');
+export const prQuery = path.join(scriptDir, 'graphql/query.pullrequests.graphql');
 
 export function findFiles(from: string, fileList: string[]) {
     try {
@@ -77,7 +80,7 @@ export function processVote(voteRoot: string, voteData: VoteData): void {
 // Function to fetch the vote data from the GitHub API
 // and transform/normalize it for further processing
 export function fetchVoteData(commentId: string): VoteData {
-    const jsonData = runGraphQL(commentId, commentQuery);
+    const jsonData = runGraphQL(commentQuery, [`-F`, `commentId=${commentId}`]);
     const result: Result = JSON.parse(jsonData);
     
     // If we have errors, we're done.
@@ -155,11 +158,11 @@ export function fetchVoteData(commentId: string): VoteData {
 }
 
 // Use GH CLI to retrieve the GH Comment
-function runGraphQL(commentId: string, filePath: string): string {
+export function runGraphQL(filePath: string, custom: string[] = []): string {
     const { status, stdout, stderr } = spawnSync('gh',
         [
             'api', 'graphql',
-            '-F', `commentId=${commentId}`,
+            ...custom,
             '-F', `query=@${filePath}`,
         ]
     );

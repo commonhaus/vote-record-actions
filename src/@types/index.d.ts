@@ -38,6 +38,22 @@ interface Result {
         };
     };
 }
+interface ItemsResult {
+    errors?: Error[];
+    data: {
+        repository: {
+            discussions?: {
+                nodes: Item[],
+            },
+            issues?: {
+                nodes: Item[],
+            },
+            pullRequests?: {
+                nodes: Item[],
+            },
+        };
+    };
+}
 
 export interface Label {
     name: string;
@@ -55,6 +71,7 @@ export interface Item {
         nameWithOwner: string;
     }
     url: string;
+    body?: string;
 }
 export interface ManualResult {
     author: {
@@ -93,6 +110,7 @@ export interface VoteData {
     title?: string;
 
     // Fields are added (or modified) by this script for rendering
+    isDone?: boolean;
     closed?: boolean;
     closedAt?: string;
     commentId?: string;
