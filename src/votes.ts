@@ -1,6 +1,5 @@
-
-import { argv } from 'node:process';
-import { fetchVoteData, processVote } from './voteCommon';
+import { argv } from "node:process";
+import { fetchVoteData, processVote } from "./voteCommon";
 
 // If this script is run directly, process the vote based on command-line arguments
 // [-0---] [-1-] [-2----------] [-3------]
@@ -10,4 +9,3 @@ const commentId = argv[3];
 
 const voteData = fetchVoteData(commentId);
 processVote(voteRoot, voteData);
-

@@ -1,9 +1,9 @@
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
-import { argv } from 'node:process';
-import { Eta } from "eta"
-import { VoteData } from './@types';
-import { findFiles } from './voteCommon';
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { argv } from "node:process";
+import { Eta } from "eta";
+import type { VoteData } from "./@types";
+import { findFiles } from "./voteCommon";
 
 // [-0---] [-1----] [-2---------]
 // npm run genIndex "${VOTE_ROOT}"
@@ -26,35 +26,38 @@ const jsonFiles = [];
 findFiles(voteRoot, jsonFiles);
 
 // Process each JSON file
-jsonFiles.forEach(filePath => {
+for (const filePath of jsonFiles) {
     try {
-        const fileContent = readFileSync(filePath, 'utf-8');
-        let voteData: VoteData = JSON.parse(fileContent);
-        if (voteData && voteData.commentId && !voteData.closed) {
+        const fileContent = readFileSync(filePath, "utf-8");
+        const voteData: VoteData = JSON.parse(fileContent);
+        if (voteData?.commentId && !voteData.closed) {
             contents.push({
                 voteData,
-                filePath
+                filePath,
             });
         }
     } catch (err) {
         console.error(err);
     }
-});
+}
 
 try {
     const openVotes = contents
-        .sort((a, b) => a.filePath.toLowerCase().localeCompare(b.filePath.toLowerCase()))
-        .map(x => {
+        .sort((a, b) =>
+            a.filePath.toLowerCase().localeCompare(b.filePath.toLowerCase()),
+        )
+        .map((x) => {
             x.voteData.missingGroupActors = x.voteData.missingGroupActors || [];
-            x.filePath = x.filePath.replace('json', 'md')
-                    .replace(sourcePath, resultPath)
-                    .replace(voteRoot, '.');
+            x.filePath = x.filePath
+                .replace("json", "md")
+                .replace(sourcePath, resultPath)
+                .replace(voteRoot, ".");
             return x;
         });
 
     const eta = new Eta({
         views: path.join(scriptDir, "templates"),
-        autoTrim: false
+        autoTrim: false,
     });
 
     const data = eta.render("./index", openVotes);

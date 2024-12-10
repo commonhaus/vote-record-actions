@@ -13,9 +13,9 @@ interface Problem {
 interface Error {
     message: string;
     extensions?: {
-        "value": string;
-        "problems": Problem[];
-    },
+        value: string;
+        problems: Problem[];
+    };
     locations?: {
         line: number;
         column: number;
@@ -27,9 +27,9 @@ interface Result {
         node: {
             author: {
                 login: string;
-            }
-            discussion?: Item,
-            issue?: Item,
+            };
+            discussion?: Item;
+            issue?: Item;
             body: string;
             createdAt: string;
             id: string;
@@ -43,14 +43,14 @@ interface ItemsResult {
     data: {
         repository: {
             discussions?: {
-                nodes: Item[],
-            },
+                nodes: Item[];
+            };
             issues?: {
-                nodes: Item[],
-            },
+                nodes: Item[];
+            };
             pullRequests?: {
-                nodes: Item[],
-            },
+                nodes: Item[];
+            };
         };
     };
 }
@@ -69,7 +69,7 @@ export interface Item {
     };
     repository: {
         nameWithOwner: string;
-    }
+    };
     url: string;
     body?: string;
 }
@@ -77,7 +77,7 @@ export interface ManualResult {
     author: {
         login: string;
         url: string;
-    }
+    };
     url: string;
     createdAt: string;
     body: string;
@@ -102,9 +102,9 @@ export interface VoteData {
     groupVotes: number;
     countedVotes: number;
     droppedVotes: number;
-    votingThreshold: 'fourfifths' | 'twothirds' | 'majority' | 'all';
+    votingThreshold: "fourfifths" | "twothirds" | "majority" | "all";
     categories?: Record<string, VoteCategory>;
-    duplicates: VoteRecord[]
+    duplicates: VoteRecord[];
     missingGroupActors: VoteRecord[];
     manualCloseComments?: ManualResult;
     title?: string;
