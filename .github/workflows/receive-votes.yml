@@ -115,16 +115,17 @@ jobs:
           # collect vote results from recently updated issues, prs, discussions
           node vote-record-actions/dist/votes.js "${TARGET_DIR}" ${repos} ${remove} ${markdown}
 
+          git add -A -- "${TARGET_DIR}"
+          if [[ -n "${CREATE_MD}" ]]; then
+            git add -A -- "${MD_DIR}"
+          fi
+
           # Regenerate the index if that value is true
           if [ -n "${CREATE_INDEX}" ]; then
             node vote-record-actions/dist/genIndex.js "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
             # Stage the index.
-            git add -A -- "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
+            git add -A -- "${INDEX_FILE}"
           fi
-
-          # Stage any changed files
-          git add -A -- "${TARGET_DIR}"
-
 
           if git diff --quiet HEAD; then
             echo "-- No changes -- "
