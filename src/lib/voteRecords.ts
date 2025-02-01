@@ -51,7 +51,7 @@ export function recordVote(voteConfig: VoteConfig, voteData: VoteData): void {
         voteConfig.options.repositories &&
         !voteConfig.options.repositories.includes(repo)
     ) {
-        console.log("    # Skipping repo");
+        console.log("    # Skipping repo", repo);
         return;
     }
 

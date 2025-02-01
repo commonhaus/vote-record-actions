@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path, { dirname } from "node:path";
 import { Eta } from "eta";
 import type { VoteConfig, VoteData } from "./@types";
@@ -33,6 +33,19 @@ interface ContentMap {
 const contents: ContentMap[] = [];
 
 const jsonFiles = [];
+
+if (!existsSync(config.jsonDir)) {
+    mkdirSync(config.jsonDir, { recursive: true });
+}
+if (!existsSync(config.markdownDir)) {
+    mkdirSync(config.markdownDir, { recursive: true });
+}
+
+const indexDir = dirname(config.indexFile);
+if (!existsSync(indexDir)) {
+    mkdirSync(indexDir, { recursive: true });
+}
+
 findFiles(config.jsonDir, jsonFiles);
 
 // Process each JSON file
@@ -71,7 +84,7 @@ try {
 
     const data = eta.render("./index", openVotes);
     console.log(`<--  ${config.indexFile}`);
-    //writeFileSync(config.indexFile, data);
+    writeFileSync(config.indexFile, data);
 } catch (err) {
     console.error(err);
 }

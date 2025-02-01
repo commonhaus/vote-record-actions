@@ -5,17 +5,18 @@ import { queryVotes } from "./lib/voteResults";
 const usage =
     "Usage: npm run votes [all|recent] jsonDir [--repos=org/repo1,org/repo2] [--md=mdDir] [--removeTag=tag1]";
 
-const args = process.argv.slice(2);
-if (args.length < 2) {
-    console.error(usage);
-    process.exit(1);
-}
-
 const config: VoteConfig = {
     options: {},
 };
-for (const arg of args) {
-    if (arg.startsWith("--repos=")) {
+for (const arg of process.argv) {
+    console.log(arg);
+    if (
+        arg.endsWith("node") ||
+        arg.endsWith("npm") ||
+        arg.endsWith("votes.js")
+    ) {
+        // skip
+    } else if (arg.startsWith("--repos=")) {
         config.options.repositories = arg.slice(8).split(",");
     } else if (arg === "all" || arg === "recent") {
         // filter out recent, not a dir
@@ -31,8 +32,9 @@ for (const arg of args) {
 }
 
 if (!config.jsonDir || !config.options.repositories) {
-    console.error("Missing required jsonDir parameter");
     console.error(usage);
+    console.error("Missing required parameter");
+    console.log(config);
     process.exit(1);
 }
 
