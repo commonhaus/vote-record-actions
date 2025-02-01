@@ -80,12 +80,16 @@ jobs:
       - name: Git Vote Update
         id: git_vote_update
         env:
-          COMMIT_MSG: ${{ inputs.commit-message }}
+          COMMIT_MSG:   ${{ inputs.commit-message }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REMOVE_TAGS: ${{ inputs.removeTags }}
+          REMOVE_TAGS:  ${{ inputs.removeTags }}
           REPOSITORIES: ${{ inputs.repositories }}
+
+          CREATE_INDEX: ${{ inputs.index_file }}
+          CREATE_MD:    ${{ inputs.markdown_dir }}
+
           INDEX_FILE: ${{ github.workspace }}/${{ inputs.index_file }}
-          MD_DIR: ${{ github.workspace }}/${{ inputs.markdown_dir }}
+          MD_DIR:     ${{ github.workspace }}/${{ inputs.markdown_dir }}
           TARGET_DIR: ${{ github.workspace }}/${{ inputs.target_dir }}
         run: |
           pushd vote-record-actions
@@ -104,7 +108,7 @@ jobs:
 
           # directory for generated markdown files (optional)
           markdown=
-          if [[ -n "${MD_DIR}" ]]; then
+          if [[ -n "${CREATE_MD}" ]]; then
             markdown="--md=\"${MD_DIR}\""
           fi
 
@@ -112,14 +116,15 @@ jobs:
           node vote-record-actions/dist/votes.js "${TARGET_DIR}" ${repos} ${remove} ${markdown}
 
           # Regenerate the index if that value is true
-          if [ -n "${INDEX_FILE}" ]; then
+          if [ -n "${CREATE_INDEX}" ]; then
             node vote-record-actions/dist/genIndex.js "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
             # Stage the index.
             git add -A -- "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
           fi
 
           # Stage any changed files
-          git add -A -- "${TARGET_DIR}" "${MD_DIR}"
+          git add -A -- "${TARGET_DIR}"
+
 
           if git diff --quiet HEAD; then
             echo "-- No changes -- "
