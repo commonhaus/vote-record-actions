@@ -1,8 +1,14 @@
 // TYPES
 
-export interface Config {
-    sourcePath: string;
-    targetFile: string;
+export interface VoteConfig {
+    jsonDir?: string;
+    markdownDir?: string;
+    indexFile?: string;
+    options?: {
+        all?: boolean;
+        repositories?: string[];
+        removeTags?: string[];
+    };
 }
 
 interface Problem {
@@ -21,44 +27,39 @@ interface Error {
         column: number;
     }[];
 }
-interface Result {
-    errors?: Error[];
-    data?: {
-        node: {
-            author: {
-                login: string;
-            };
-            discussion?: Item;
-            issue?: Item;
-            body: string;
-            createdAt: string;
-            id: string;
-            updatedAt: string;
-            url: string;
-        };
-    };
-}
-interface ItemsResult {
+interface CombinedResult {
     errors?: Error[];
     data: {
-        repository: {
-            discussions?: {
-                nodes: Item[];
-            };
-            issues?: {
-                nodes: Item[];
-            };
-            pullRequests?: {
-                nodes: Item[];
-            };
+        issuesAndPRs: {
+            nodes: ItemWithComments[];
+        };
+        discussions: {
+            nodes: ItemWithComments[];
         };
     };
 }
-
+export interface ManualResult {
+    author: {
+        login: string;
+        url: string;
+    };
+    url: string;
+    createdAt: string;
+    body: string;
+}
 export interface Label {
     name: string;
 }
-export interface Item {
+export interface Comment {
+    id: string;
+    body: string;
+    createdAt: string;
+    updatedAt?: string;
+    author: {
+        login: string;
+    };
+}
+export interface ItemWithComments {
     id: string;
     title: string;
     number: number;
@@ -72,15 +73,9 @@ export interface Item {
     };
     url: string;
     body?: string;
-}
-export interface ManualResult {
-    author: {
-        login: string;
-        url: string;
+    comments: {
+        nodes: Comment[];
     };
-    url: string;
-    createdAt: string;
-    body: string;
 }
 export interface VoteRecord {
     login: string;

@@ -1,0 +1,95 @@
+query CombinedSearch(
+  $searchQuery: String!,
+  $commentsCount: Int = 50
+) {
+  # Search for Issues and PRs
+  issuesAndPRs: search(
+    query: $searchQuery,
+    type: ISSUE,
+    first: $commentsCount
+  ) {
+    nodes {
+      ... on Issue {
+        id
+        title
+        number
+        closed
+        closedAt
+        url
+        body
+        repository {
+          nameWithOwner
+        }
+        ...LabelFields
+        comments(first: 50) {
+          nodes {
+            ...CommentFields
+          }
+        }
+      }
+      ... on PullRequest {
+        id
+        title
+        number
+        closed
+        closedAt
+        url
+        body
+        repository {
+          nameWithOwner
+        }
+        ...LabelFields
+        comments(first: 50) {
+          nodes {
+            ...CommentFields
+          }
+        }
+      }
+    }
+  }
+  # Separate search for Discussions
+  discussions: search(
+    query: $searchQuery,
+    type: DISCUSSION,
+    first: $commentsCount
+  ) {
+    nodes {
+      ... on Discussion {
+        id
+        title
+        number
+        closed
+        closedAt
+        url
+        body
+        repository {
+          nameWithOwner
+        }
+        ...LabelFields
+        comments(first: 50) {
+          nodes {
+            ...CommentFields
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment LabelFields on Labelable {
+  labels(first: 10) {
+    nodes {
+      name
+    }
+  }
+}
+
+fragment CommentFields on Comment {
+  id
+  body
+  createdAt
+  updatedAt
+  author {
+    login
+  }
+}

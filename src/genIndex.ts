@@ -1,19 +1,24 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { argv } from "node:process";
 import { Eta } from "eta";
-import type { VoteData } from "./@types";
-import { findFiles } from "./voteCommon";
-
-// [-0---] [-1----] [-2---------]
-// npm run genIndex "${VOTE_ROOT}"
+import type { VoteConfig, VoteData } from "./@types";
+import { findFiles, makePathRelativeTo } from "./lib/voteRecords";
 
 const scriptDir = process.cwd();
+const usage = "Usage: npm run genIndex jsonDir mdDir indexFile";
 
-const voteRoot = argv[2];
-const sourcePath = `${voteRoot}/raw`;
-const resultPath = `${voteRoot}/results`;
-const targetFile = `${voteRoot}/README.md`;
+const args = process.argv.slice(2);
+if (args.length < 3) {
+    console.error(usage);
+    process.exit(1);
+}
+
+const config: VoteConfig = {
+    jsonDir: args[0],
+    markdownDir: args[1],
+    indexFile: args[2],
+};
+const relativeRoot = makePathRelativeTo(config.indexFile, config.markdownDir);
 
 interface ContentMap {
     voteData: VoteData;
@@ -23,7 +28,7 @@ interface ContentMap {
 const contents: ContentMap[] = [];
 
 const jsonFiles = [];
-findFiles(voteRoot, jsonFiles);
+findFiles(config.jsonDir, jsonFiles);
 
 // Process each JSON file
 for (const filePath of jsonFiles) {
@@ -50,8 +55,8 @@ try {
             x.voteData.missingGroupActors = x.voteData.missingGroupActors || [];
             x.filePath = x.filePath
                 .replace("json", "md")
-                .replace(sourcePath, resultPath)
-                .replace(voteRoot, ".");
+                .replace(config.jsonDir, config.markdownDir)
+                .replace(config.markdownDir, relativeRoot);
             return x;
         });
 
@@ -61,8 +66,8 @@ try {
     });
 
     const data = eta.render("./index", openVotes);
-    console.log(`<--  ${targetFile}`);
-    writeFileSync(targetFile, data);
+    console.log(`<--  ${config.indexFile}`);
+    writeFileSync(config.indexFile, data);
 } catch (err) {
     console.error(err);
 }

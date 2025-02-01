@@ -1,7 +1,7 @@
 import esbuild from "esbuild";
 
 esbuild.build({
-    entryPoints: ['./src/genIndex.ts', './src/votes.ts', './src/repair.ts'],
+    entryPoints: ['./src/genIndex.ts', './src/votes.ts'],
     bundle: true,
     outdir: './dist',
     platform: 'node',

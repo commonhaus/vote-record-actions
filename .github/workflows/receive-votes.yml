@@ -1,0 +1,133 @@
+name: update-vote-results
+
+on:
+  workflow_call:
+    inputs:
+      commit-message:
+        type: string
+        description: 'Commit message'
+        default: '🗳️ Auto-update GH Votes'
+      branch:
+        type: string
+        description: 'Branch to push to'
+        default: 'main'
+      removeTags:
+        type: string
+        description: 'Comma-separated list of tags to remove from discovered votes'
+        required: false
+      repositories:
+        type: string
+        description: 'Comma-separated list of repositories (owner/name) to inspect'
+        required: true
+      target_dir:
+        type: string
+        description: Directory containing raw vote data (JSON)
+        default: votes
+      markdown_dir:
+        description: Directory for generated markdown content (pages will not be generated if this is unset)
+        type: string
+        required: false
+      index_file:
+        description: Name of index file to generate/update
+        type: string
+        required: false
+
+    outputs:
+      votes_updated:
+        description: True if changes to recorded votes were made
+        value: ${{ jobs.update_votes.outputs.votes_updated }}
+
+env:
+  GH_BOT_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+  GH_BOT_NAME: "GitHub Action"
+
+jobs:
+
+  update_votes:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: record-votes
+      cancel-in-progress: false
+
+    outputs:
+      votes_updated: ${{ steps.git_vote_update.outputs.updated }}
+
+    steps:
+      - name: Git Config
+        run: |
+          git config user.name ${{ env.GH_BOT_NAME }}
+          git config user.email ${{ env.GH_BOT_EMAIL }}
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.branch }}
+
+      - uses: actions/checkout@v4
+        with:
+          repository: commonhaus/vote-record-actions
+          path: 'vote-record-actions'
+          fetch-depth: 1
+          ref: main
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'vote-record-actions/package-lock.json'
+
+      - name: Git Vote Update
+        id: git_vote_update
+        env:
+          COMMIT_MSG: ${{ inputs.commit-message }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INDEX_FILE: ${{ inputs.index_file }}
+          MD_DIR: ${{ github.workspace }}/${{ inputs.markdown_dir }}
+          REMOVE_TAGS: ${{ inputs.removeTags }}
+          REPOSITORIES: ${{ inputs.repositories }}
+          TARGET_DIR: ${{ github.workspace }}/${{ inputs.target_dir }}
+        run: |
+          pushd vote-record-actions
+            npm ci
+
+            # required: list of repos to look at
+            repos="--repos=${REPOSITORIES}"
+
+            # tags to remove (optional)
+            remove=
+            if [[ -n "${REMOVE_TAGS}" ]]; then
+              remove="--removeTag=${REMOVE_TAGS}"
+            fi
+
+            # directory for generated markdown files (optional)
+            markdown=
+            if [[ -n "${MD_DIR}" ]]; then
+              markdown=""--md=\"${MD_DIR}\""
+            fi
+
+            # collect vote results from recently updated issues, prs, discussions
+            npm run votes -- "${TARGET_DIR}" ${repos} ${remove} ${markdown}
+          popd
+
+          # Stage any changed files
+          git add -A -- "${TARGET_DIR}" "${MD_DIR}"
+
+          if git diff --quiet HEAD; then
+            echo "-- No changes -- "
+          else
+            # If things changed...
+
+            # Regenerate the index if that value is true
+            if [ -n "${INDEX_FILE}" ]; then
+              npm run index "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
+              # Stage the index.
+              git add -A -- "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
+            fi
+
+            # commit and push vote results
+            git commit -am "${COMMIT_MSG}"
+            git pull --rebase
+            git push
+            echo "updated=true" >> $GITHUB_OUTPUT
+          fi
