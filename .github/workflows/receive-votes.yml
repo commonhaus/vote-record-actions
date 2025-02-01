@@ -47,17 +47,12 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: record-votes
-      cancel-in-progress: false
+      cancel-in-progress: true
 
     outputs:
       votes_updated: ${{ steps.git_vote_update.outputs.updated }}
 
     steps:
-      - name: Git Config
-        run: |
-          git config user.name ${{ env.GH_BOT_NAME }}
-          git config user.email ${{ env.GH_BOT_EMAIL }}
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -69,6 +64,11 @@ jobs:
           path: 'vote-record-actions'
           fetch-depth: 1
           ref: main
+
+      - name: Git Config
+        run: |
+          git config user.name ${{ env.GH_BOT_NAME }}
+          git config user.email ${{ env.GH_BOT_EMAIL }}
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -82,33 +82,41 @@ jobs:
         env:
           COMMIT_MSG: ${{ inputs.commit-message }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INDEX_FILE: ${{ inputs.index_file }}
-          MD_DIR: ${{ github.workspace }}/${{ inputs.markdown_dir }}
           REMOVE_TAGS: ${{ inputs.removeTags }}
           REPOSITORIES: ${{ inputs.repositories }}
+          INDEX_FILE: ${{ github.workspace }}/${{ inputs.index_file }}
+          MD_DIR: ${{ github.workspace }}/${{ inputs.markdown_dir }}
           TARGET_DIR: ${{ github.workspace }}/${{ inputs.target_dir }}
         run: |
           pushd vote-record-actions
             npm ci
-
-            # required: list of repos to look at
-            repos="--repos=${REPOSITORIES}"
-
-            # tags to remove (optional)
-            remove=
-            if [[ -n "${REMOVE_TAGS}" ]]; then
-              remove="--removeTag=${REMOVE_TAGS}"
-            fi
-
-            # directory for generated markdown files (optional)
-            markdown=
-            if [[ -n "${MD_DIR}" ]]; then
-              markdown=""--md=\"${MD_DIR}\""
-            fi
-
-            # collect vote results from recently updated issues, prs, discussions
-            npm run votes -- "${TARGET_DIR}" ${repos} ${remove} ${markdown}
+            npm run build
           popd
+
+          # required: list of repos to look at
+          repos="--repos=${REPOSITORIES}"
+
+          # tags to remove (optional)
+          remove=
+          if [[ -n "${REMOVE_TAGS}" ]]; then
+            remove="--removeTag=${REMOVE_TAGS}"
+          fi
+
+          # directory for generated markdown files (optional)
+          markdown=
+          if [[ -n "${MD_DIR}" ]]; then
+            markdown="--md=\"${MD_DIR}\""
+          fi
+
+          # collect vote results from recently updated issues, prs, discussions
+          node vote-record-actions/dist/votes.js "${TARGET_DIR}" ${repos} ${remove} ${markdown}
+
+          # Regenerate the index if that value is true
+          if [ -n "${INDEX_FILE}" ]; then
+            node vote-record-actions/dist/genIndex.js "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
+            # Stage the index.
+            git add -A -- "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
+          fi
 
           # Stage any changed files
           git add -A -- "${TARGET_DIR}" "${MD_DIR}"
@@ -116,15 +124,6 @@ jobs:
           if git diff --quiet HEAD; then
             echo "-- No changes -- "
           else
-            # If things changed...
-
-            # Regenerate the index if that value is true
-            if [ -n "${INDEX_FILE}" ]; then
-              npm run index "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
-              # Stage the index.
-              git add -A -- "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
-            fi
-
             # commit and push vote results
             git commit -am "${COMMIT_MSG}"
             git pull --rebase

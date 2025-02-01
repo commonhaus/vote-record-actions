@@ -1,10 +1,11 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import path from "node:path";
+import path, { dirname } from "node:path";
 import { Eta } from "eta";
 import type { VoteConfig, VoteData } from "./@types";
 import { findFiles, makePathRelativeTo } from "./lib/voteRecords";
 
-const scriptDir = process.cwd();
+const scriptRoot = dirname(import.meta.dirname);
+
 const usage = "Usage: npm run genIndex jsonDir mdDir indexFile";
 
 const args = process.argv.slice(2);
@@ -18,7 +19,11 @@ const config: VoteConfig = {
     markdownDir: args[1],
     indexFile: args[2],
 };
-const relativeRoot = makePathRelativeTo(config.indexFile, config.markdownDir);
+
+const relativeResults = makePathRelativeTo(
+    config.indexFile,
+    config.markdownDir,
+);
 
 interface ContentMap {
     voteData: VoteData;
@@ -55,19 +60,18 @@ try {
             x.voteData.missingGroupActors = x.voteData.missingGroupActors || [];
             x.filePath = x.filePath
                 .replace("json", "md")
-                .replace(config.jsonDir, config.markdownDir)
-                .replace(config.markdownDir, relativeRoot);
+                .replace(config.jsonDir, relativeResults);
             return x;
         });
 
     const eta = new Eta({
-        views: path.join(scriptDir, "templates"),
+        views: path.join(scriptRoot, "templates"),
         autoTrim: false,
     });
 
     const data = eta.render("./index", openVotes);
     console.log(`<--  ${config.indexFile}`);
-    writeFileSync(config.indexFile, data);
+    //writeFileSync(config.indexFile, data);
 } catch (err) {
     console.error(err);
 }

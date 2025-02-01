@@ -15,7 +15,6 @@ const config: VoteConfig = {
     options: {},
 };
 for (const arg of args) {
-    console.log(arg);
     if (arg.startsWith("--repos=")) {
         config.options.repositories = arg.slice(8).split(",");
     } else if (arg === "all" || arg === "recent") {

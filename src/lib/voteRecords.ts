@@ -5,11 +5,11 @@ import {
     statSync,
     writeFileSync,
 } from "node:fs";
-import path from "node:path";
+import path, { dirname } from "node:path";
 import { Eta } from "eta";
 import type { VoteCategory, VoteConfig, VoteData } from "../@types";
 
-const scriptDir = process.cwd();
+const scriptRoot = dirname(import.meta.dirname);
 export function findFiles(from: string, fileList: string[]) {
     try {
         console.log("--> ", from);
@@ -39,7 +39,6 @@ export function makePathRelativeTo(
 }
 
 export function recordVote(voteConfig: VoteConfig, voteData: VoteData): void {
-    console.log(voteData);
     if (!voteData.commentId) {
         console.log("    # No commentId found");
         return;
@@ -86,7 +85,7 @@ export function recordVote(voteConfig: VoteConfig, voteData: VoteData): void {
             mkdirSync(resultsVotePath, { recursive: true });
         }
         const eta = new Eta({
-            views: path.join(scriptDir, "templates"),
+            views: path.join(scriptRoot, "templates"),
             autoTrim: false,
         });
         const data = eta.render("./result", {

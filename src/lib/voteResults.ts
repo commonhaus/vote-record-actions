@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import path from "node:path";
+import path, { dirname } from "node:path";
 import type {
     CombinedResult,
     ItemWithComments,
@@ -8,9 +8,9 @@ import type {
     VoteData,
 } from "../@types";
 
-const scriptDir = process.cwd();
+const scriptRoot = dirname(import.meta.dirname);
 const botcommentquery = path.join(
-    scriptDir,
+    scriptRoot, // parent of dist dir
     "graphql/query.botcomment.graphql",
 );
 const openVotesString =
@@ -136,7 +136,6 @@ export function fetchVoteData(
     }
 
     voteData.progress = voteProgress(voteData);
-    console.log(voteData);
     return voteData;
 }
 
