@@ -4,9 +4,7 @@
     "format": "npx @biomejs/biome format ./src",
     "lint": "npx @biomejs/biome lint ./src",
     "prebuild": "npx @biomejs/biome check ./src",
-    "build": "node esbuild.config.mjs",
-    "index": "npm run build && node ./dist/genIndex.js",
-    "votes": "npm run build && node ./dist/votes.js"
+    "build": "node esbuild.config.mjs"
   },
   "type": "module",
   "devDependencies": {
