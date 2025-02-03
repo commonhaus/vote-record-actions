@@ -20,7 +20,13 @@ const allVotesString = "commenter:haus-rules-bot[bot] sort:updated-desc";
 export function queryVotes(voteConfig: VoteConfig): VoteData[] {
     const votes: VoteData[] = [];
 
-    const query = voteConfig.options?.all ? allVotesString : openVotesString;
+    const suffix = voteConfig.options.repositories
+        ? voteConfig.options.repositories
+              .map((repo) => ` repo:${repo}`)
+              .join("")
+        : "";
+    const query =
+        (voteConfig.options?.all ? allVotesString : openVotesString) + suffix;
     const jsonData = runGraphQL(botcommentquery, [
         "-F",
         `searchQuery=${query}`,
