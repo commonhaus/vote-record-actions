@@ -47,7 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: record-votes
-      cancel-in-progress: true
 
     outputs:
       votes_updated: ${{ steps.git_vote_update.outputs.updated }}
