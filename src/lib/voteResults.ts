@@ -14,7 +14,7 @@ const botcommentquery = path.join(
     "graphql/query.botcomment.graphql",
 );
 const openVotesString =
-    'commenter:haus-rules-bot[bot] sort:updated-desc label:"vote/open"';
+    'commenter:haus-rules-bot[bot] sort:updated-desc label:"vote/open","vote/done"';
 const allVotesString = "commenter:haus-rules-bot[bot] sort:updated-desc";
 
 export function queryVotes(voteConfig: VoteConfig): VoteData[] {
