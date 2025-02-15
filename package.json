@@ -1,4 +1,7 @@
 {
+  "name": "vote-record-actions",
+  "version": "0.8.0",
+  "private": true,
   "scripts": {
     "fix": "npx @biomejs/biome check --write ./src",
     "format": "npx @biomejs/biome format ./src",
@@ -10,7 +13,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/node": "^20.12.12",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.0",
     "typescript": "^5.4.5",
     "yaml": "^2.3.4"
   },

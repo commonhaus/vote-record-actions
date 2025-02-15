@@ -13,8 +13,6 @@ const botcommentquery = path.join(
     scriptRoot, // parent of dist dir
     "graphql/query.botcomment.graphql",
 );
-const openVotesString = 'sort:updated-desc label:"vote/open","vote/done"';
-const allVotesString = "sort:updated-desc";
 
 export function queryVotes(voteConfig: VoteConfig): VoteData[] {
     const votes: VoteData[] = [];
@@ -24,10 +22,7 @@ export function queryVotes(voteConfig: VoteConfig): VoteData[] {
               .map((repo) => ` repo:${repo}`)
               .join("")
         : "";
-    const voteString = voteConfig.options?.all
-        ? allVotesString
-        : openVotesString;
-    const query = `commenter:${voteConfig.bot} ${voteString}${suffix}`;
+    const query = `commenter:${voteConfig.bot} sort:updated-desc${suffix}`;
     const jsonData = runGraphQL(botcommentquery, [
         "-F",
         `searchQuery=${query}`,
