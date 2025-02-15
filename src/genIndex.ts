@@ -15,6 +15,7 @@ if (args.length < 3) {
 }
 
 const config: VoteConfig = {
+    bot: "haus-rules-bot[bot]",
     jsonDir: args[0],
     markdownDir: args[1],
     indexFile: args[2],

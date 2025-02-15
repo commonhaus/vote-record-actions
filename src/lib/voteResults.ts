@@ -13,9 +13,8 @@ const botcommentquery = path.join(
     scriptRoot, // parent of dist dir
     "graphql/query.botcomment.graphql",
 );
-const openVotesString =
-    'commenter:haus-rules-bot[bot] sort:updated-desc label:"vote/open","vote/done"';
-const allVotesString = "commenter:haus-rules-bot[bot] sort:updated-desc";
+const openVotesString = 'sort:updated-desc label:"vote/open","vote/done"';
+const allVotesString = "sort:updated-desc";
 
 export function queryVotes(voteConfig: VoteConfig): VoteData[] {
     const votes: VoteData[] = [];
@@ -25,8 +24,10 @@ export function queryVotes(voteConfig: VoteConfig): VoteData[] {
               .map((repo) => ` repo:${repo}`)
               .join("")
         : "";
-    const query =
-        (voteConfig.options?.all ? allVotesString : openVotesString) + suffix;
+    const voteString = voteConfig.options?.all
+        ? allVotesString
+        : openVotesString;
+    const query = `commenter:${voteConfig.bot} ${voteString}${suffix}`;
     const jsonData = runGraphQL(botcommentquery, [
         "-F",
         `searchQuery=${query}`,
@@ -76,7 +77,8 @@ export function fetchVoteData(
     const comment = comments[0];
 
     const match = comment.body.match(/<!-- vote::data ([\s\S]*?)-->/);
-    if (!comment.author.login.includes("haus-rules-bot") || !match) {
+    const botLogin = voteConfig.bot.replace(/\[bot\]/, "");
+    if (!comment.author.login.includes(botLogin) || !match) {
         console.log(
             `xxx ${item.repository.nameWithOwner}#${item.number} - no vote data found`,
         );

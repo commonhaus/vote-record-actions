@@ -29,6 +29,9 @@ inputs:
   index_file:
     description: Name of index file to generate/update
     required: false
+  vote_comment_bot:
+    description: 'login of vote counting bot'
+    required: false
 
 outputs:
   votes_updated:
@@ -67,6 +70,7 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
         REMOVE_TAGS:  ${{ inputs.removeTags }}
         REPOSITORIES: ${{ inputs.repositories }}
+        VOTE_BOT: ${{ inputs.vote_comment_bot }}
 
         CREATE_INDEX: ${{ inputs.index_file }}
         CREATE_MD:    ${{ inputs.markdown_dir }}
@@ -74,6 +78,7 @@ runs:
         INDEX_FILE: ${{ github.workspace }}/${{ inputs.index_file }}
         MD_DIR:     ${{ github.workspace }}/${{ inputs.markdown_dir }}
         TARGET_DIR: ${{ github.workspace }}/${{ inputs.target_dir }}
+
       run: |
         pushd vote-record-actions
           npm ci
@@ -89,6 +94,12 @@ runs:
           remove="--removeTag=${REMOVE_TAGS}"
         fi
 
+        # login of vote counting bot (comment author, optional)
+        bot=
+        if [[ -n "${VOTE_BOT}" ]]; then
+          bot="--bot=\"${VOTE_BOT}\""
+        fi
+
         # directory for generated markdown files (optional)
         markdown=
         if [[ -n "${CREATE_MD}" ]]; then
@@ -96,7 +107,7 @@ runs:
         fi
 
         # collect vote results from recently updated issues, prs, discussions
-        node vote-record-actions/dist/votes.js "${TARGET_DIR}" ${repos} ${remove} ${markdown}
+        node vote-record-actions/dist/votes.js "${TARGET_DIR}" ${repos} ${remove} ${markdown} ${bot}
 
         git add -A -- "${TARGET_DIR}"
         if [[ -n "${CREATE_MD}" ]]; then

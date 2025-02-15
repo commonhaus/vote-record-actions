@@ -31,6 +31,10 @@ on:
         description: Name of index file to generate/update
         type: string
         required: false
+      vote_comment_bot:
+        description: 'login of vote counting bot'
+        type: string
+        required: false
 
     outputs:
       votes_updated:
@@ -67,3 +71,4 @@ jobs:
           target_dir: ${{ inputs.target_dir }}
           markdown_dir: ${{ inputs.markdown_dir }}
           index_file: ${{ inputs.index_file }}
+          vote_comment_bot: ${{ inputs.vote_comment_bot }}

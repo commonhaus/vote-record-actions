@@ -6,6 +6,7 @@ const usage =
     "Usage: npm run votes [all|recent] jsonDir [--repos=org/repo1,org/repo2] [--md=mdDir] [--removeTag=tag1]";
 
 const config: VoteConfig = {
+    bot: "haus-rules-bot[bot]",
     options: {},
 };
 for (const arg of process.argv) {
@@ -25,6 +26,8 @@ for (const arg of process.argv) {
         config.markdownDir = arg.slice(5);
     } else if (arg.startsWith("--removeTag=")) {
         config.options.removeTags = arg.slice(12).split(",");
+    } else if (arg.startsWith("--bot=")) {
+        config.bot = arg.slice(6);
     } else {
         // only required parameter
         config.jsonDir = arg;

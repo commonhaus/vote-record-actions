@@ -1,6 +1,7 @@
 // TYPES
 
 export interface VoteConfig {
+    bot: string;
     jsonDir?: string;
     markdownDir?: string;
     indexFile?: string;
