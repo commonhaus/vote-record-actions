@@ -104,6 +104,7 @@ runs:
         markdown=
         if [[ -n "${CREATE_MD}" ]]; then
           markdown="--md=\"${MD_DIR}\""
+          mkdir -p ${MD_DIR}
         fi
 
         # collect vote results from recently updated issues, prs, discussions
@@ -116,6 +117,7 @@ runs:
 
         # Regenerate the index if that value is true
         if [ -n "${CREATE_INDEX}" ]; then
+          mkdir -p $(dirname ${MD_DIR})
           node vote-record-actions/dist/genIndex.js "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
           # Stage the index.
           git add -A -- "${INDEX_FILE}"
