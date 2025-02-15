@@ -46,8 +46,8 @@ runs:
       with:
         repository: commonhaus/vote-record-actions
         path: 'vote-record-actions'
-        fetch-depth: 1
         ref: main
+        fetch-depth: 1
 
     - name: Use Node.js
       uses: actions/setup-node@v4

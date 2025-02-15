@@ -15,11 +15,17 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+          fetch-depth: 0
+          # Fine-grained PAT with contents:write and workflows:write
+          # scopes
+          token: ${{ secrets.CF_VOTES_RELEASE_ACTION }} # otherwise, you will failed to push refs to dest repo
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -32,43 +38,38 @@ jobs:
         id: build
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name ${{ env.GH_BOT_NAME }}
           git config user.email ${{ env.GH_BOT_EMAIL }}
 
           npm ci
-          npm build
+          npm run build
 
-          npm version ${INPUT_VERSION} --no-git-tag-version
-          VERSION=$(grep '^  "version"' package.json | cut -d'"' -f4)
-          echo $VERSION
+          VERSION=$(npm version ${INPUT_VERSION} -m "🔖 %s" --tag-version-prefix="")
+          git push && git push --tags
 
-          if git rev-parse "refs/tags/$VERSION" > /dev/null 2>&1; then
-            echo "🛑 Tag $VERSION already exists"
-            exit 1
-          fi
+          RELEASE=${VERSION#v}
+          BRANCH=release/${RELEASE}
 
           # Create a new branch for the release
-          git checkout -b release/$VERSION
+          git checkout -b ${BRANCH}
 
           # Update references from main to the new release branch
-          sed -i 's|\(ref":\) "main"|\1 "release/'$VERSION'"|' .github/actions/count-votes/action.yml
-          sed -i 's|\(ref":\) "main"|\1 "release/'$VERSION'"|' .github/workflows/receive-votes.yml
+          PATTERN="/path: 'vote-record-actions'/{n;s|ref: main|ref: ${BRANCH}|}"
+          echo PATTERN
+          sed -i "$PATTERN" .github/actions/count-votes/action.yml
+          sed -i "s|count-votes@main|count-votes@'$RELEASE'|" .github/workflows/receive-votes.yml
 
-          git add .
-          git status
-          git commit -m "🔖 $VERSION"
-          git push --set-upstream origin release/$VERSION
+          git add .github
+          git commit -m "📝 Update action references for ${RELEASE}"
+          git push --set-upstream origin ${BRANCH}
 
-          git tag $VERSION
-          git push --tags
+          gh release create "$RELEASE" \
+              --title "Release $RELEASE" \
+              --target ${BRANCH} \
+              --verify-tag
 
-          gh release create "$VERSION" \
-              --title "Release $VERSION" \
-              --verify-tag \
-              --prerelease=${prerelease}
-
-          gh release upload "$VERSION" --clobber \
+          gh release upload "$RELEASE" --clobber \
             './dist/genIndex.js#genIndex.js' \
             './dist/votes.js#votes.js'
