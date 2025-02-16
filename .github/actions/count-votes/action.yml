@@ -41,26 +41,30 @@ outputs:
 runs:
   using: "composite"
   steps:
-
-    - uses: actions/checkout@v4
-      with:
-        repository: commonhaus/vote-record-actions
-        path: 'vote-record-actions'
-        ref: main
-        fetch-depth: 1
-
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: 'vote-record-actions/package-lock.json'
-
     - name: Configure Git
       shell: bash
       run: |
         git config user.name "${{ inputs.bot-name }}"
         git config user.email "${{ inputs.bot-email }}"
+
+    - name: Download Compiled JS from Release
+      shell: bash
+      env:
+        VOTE_ACTIONS_RELEASE: snapshot
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "Downloading ${VOTE_ACTIONS_RELEASE}"
+        mkdir -p vote-record-actions
+        pushd vote-record-actions
+
+        gh release download ${VOTE_ACTIONS_RELEASE} \
+          --repo commonhaus/vote-record-actions \
+          --pattern "*.tar.gz" \
+
+        tar -xzf vote-record-actions-${VOTE_ACTIONS_RELEASE}.tar.gz
+
+        popd
+        find vote-record-actions
 
     - name: Git Vote Update
       id: git_vote_update
@@ -80,11 +84,6 @@ runs:
         TARGET_DIR: ${{ github.workspace }}/${{ inputs.target_dir }}
 
       run: |
-        pushd vote-record-actions
-          npm ci
-          npm run build
-        popd
-
         # required: list of repos to look at
         repos="--repos=${REPOSITORIES}"
 

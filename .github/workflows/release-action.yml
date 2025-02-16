@@ -56,21 +56,8 @@ jobs:
           git tag -f snapshot
           git push --tags
 
-          gh release upload snapshot --clobber \
-              './dist/genIndex.js#genIndex.js' \
-              './dist/votes.js#votes.js'
-
           echo "Update snapshot release"
           gh release edit "snapshot" -t "snapshot" --prerelease
-
-      - id: undraft_snapshot
-        name: Un-draft Snapshot release
-        if: ${{ github.event_name == 'push' }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          gh release edit snapshot --draft=false
-          gh release view snapshot
 
       # Build the plugin
       - id: tag_release
@@ -90,10 +77,8 @@ jobs:
           git checkout -b ${BRANCH}
 
           # Update references from main to the new release branch
-          PATTERN="/path: 'vote-record-actions'/{n;s|ref: main|ref: ${BRANCH}|}"
-          echo ${PATTERN}
-          sed -i "${PATTERN}" .github/actions/count-votes/action.yml
-          sed -i "s|count-votes@main|count-votes@'$RELEASE'|" .github/workflows/receive-votes.yml
+          sed -i "s|VOTE_ACTIONS_RELEASE: snapshot|VOTE_ACTIONS_RELEASE: '$VERSION'|" .github/actions/count-votes/action.yml
+          sed -i "s|count-votes@main|count-votes@'$VERSION'|" .github/workflows/receive-votes.yml
 
           git add .github
           git commit -m "📝 Update action references for ${VERSION}"
@@ -104,6 +89,30 @@ jobs:
               --target ${BRANCH} \
               --verify-tag
 
+          echo "::set-output name=version::${VERSION}"
+
+      - id: upload_artifacts
+        name: Upload Artifacts
+        env:
+          VERSION: ${{ steps.tag_release.outputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z ${VERSION} ]; then
+            VERSION=snapshot
+          fi
+          echo "Updating artifacts for ${VERSION}"
+
+          # Create a tar.gz archive
+          tar -czf vote-record-actions-${VERSION}.tar.gz dist package.json graphql templates
+
           gh release upload "${VERSION}" --clobber \
-            './dist/genIndex.js#genIndex.js' \
-            './dist/votes.js#votes.js'
+            "vote-record-actions-${VERSION}.tar.gz#vote-record-actions-${VERSION}.tar.gz"
+
+      - id: undraft_snapshot
+        name: Un-draft Snapshot release
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit snapshot --draft=false
+          gh release view snapshot
