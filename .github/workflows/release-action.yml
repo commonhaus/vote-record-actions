@@ -89,7 +89,7 @@ jobs:
               --target ${BRANCH} \
               --verify-tag
 
-          echo "::set-output name=version::${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - id: upload_artifacts
         name: Upload Artifacts
