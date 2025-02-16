@@ -6,7 +6,7 @@ import { findFiles, makePathRelativeTo } from "./lib/voteRecords";
 
 const scriptRoot = dirname(import.meta.dirname);
 
-const usage = "Usage: npm run genIndex jsonDir mdDir indexFile";
+const usage = "Usage: node ./dist/genIndex.js jsonDir mdDir indexFile";
 
 const args = process.argv.slice(2);
 if (args.length < 3) {

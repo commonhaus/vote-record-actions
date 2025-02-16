@@ -111,13 +111,16 @@ runs:
 
         git add -A -- "${TARGET_DIR}"
         if [[ -n "${CREATE_MD}" ]]; then
+          # stage markdown results
           git add -A -- "${MD_DIR}"
         fi
 
         # Regenerate the index if that value is true
-        if [ -n "${CREATE_INDEX}" ]; then
-          mkdir -p $(dirname ${MD_DIR})
+        # index will reference markdown results (relative paths)
+        if [[ -n "${CREATE_INDEX}" && -n "${CREATE_MD}" ]]; then
+          mkdir -p $(dirname ${INDEX_FILE})
           node vote-record-actions/dist/genIndex.js "${TARGET_DIR}" "${MD_DIR}" "${INDEX_FILE}"
+
           # Stage the index.
           git add -A -- "${INDEX_FILE}"
         fi

@@ -1,9 +1,10 @@
+import { existsSync, mkdirSync } from "node:fs";
 import type { VoteConfig } from "./@types";
 import { recordVote } from "./lib/voteRecords";
 import { queryVotes } from "./lib/voteResults";
 
 const usage =
-    "Usage: npm run votes [all|recent] jsonDir [--repos=org/repo1,org/repo2] [--md=mdDir] [--removeTag=tag1]";
+    "Usage: node ./dist/votes.js [all|recent] jsonDir [--repos=org/repo1,org/repo2] [--md=mdDir] [--removeTag=tag1]";
 
 const config: VoteConfig = {
     bot: "haus-rules-bot[bot]",
@@ -11,11 +12,7 @@ const config: VoteConfig = {
 };
 for (const arg of process.argv) {
     console.log(arg);
-    if (
-        arg.endsWith("node") ||
-        arg.endsWith("npm") ||
-        arg.endsWith("votes.js")
-    ) {
+    if (arg.endsWith("votes.js")) {
         // skip
     } else if (arg.startsWith("--repos=")) {
         config.options.repositories = arg.slice(8).split(",");
@@ -39,6 +36,13 @@ if (!config.jsonDir || !config.options.repositories) {
     console.error("Missing required parameter");
     console.log(config);
     process.exit(1);
+}
+
+if (!existsSync(config.jsonDir)) {
+    mkdirSync(config.jsonDir, { recursive: true });
+}
+if (!existsSync(config.markdownDir)) {
+    mkdirSync(config.markdownDir, { recursive: true });
 }
 
 const votes = queryVotes(config);
