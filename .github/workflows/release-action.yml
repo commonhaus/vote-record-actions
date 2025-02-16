@@ -1,6 +1,10 @@
 name: Release workflows and actions
 
 on:
+  push:
+    branches:
+      - 'main'
+
   workflow_dispatch:
     inputs:
       version:
@@ -33,12 +37,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      # Build the plugin
-      - name: Build and Tag
-        id: build
-        env:
-          INPUT_VERSION: ${{ github.event.inputs.version }}
-          GITHUB_TOKEN: ${{ github.token }}
+      - id: build
         run: |
           git config user.name ${{ env.GH_BOT_NAME }}
           git config user.email ${{ env.GH_BOT_EMAIL }}
@@ -46,30 +45,65 @@ jobs:
           npm ci
           npm run build
 
+      - id: snapshot
+        name: Update snapshot release
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          echo "Update tag for snapshot"
+          git push origin :refs/tags/snapshot
+          git tag -f snapshot
+          git push --tags
+
+          gh release upload snapshot --clobber \
+              './dist/genIndex.js#genIndex.js' \
+              './dist/votes.js#votes.js'
+
+          echo "Update snapshot release"
+          gh release edit "snapshot" -t "snapshot" --prerelease
+
+      - id: undraft_snapshot
+        name: Un-draft Snapshot release
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit snapshot --draft=false
+          gh release view snapshot
+
+      # Build the plugin
+      - id: tag_release
+        name: Create new release
+        if: ${{ github.event_name != 'push' }}
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
           VERSION=$(npm version ${INPUT_VERSION} -m "🔖 %s" --tag-version-prefix="")
           git push && git push --tags
 
-          RELEASE=${VERSION#v}
-          BRANCH=release/${RELEASE}
+          echo ${VERSION}
+          BRANCH=release/${VERSION}
 
           # Create a new branch for the release
           git checkout -b ${BRANCH}
 
           # Update references from main to the new release branch
           PATTERN="/path: 'vote-record-actions'/{n;s|ref: main|ref: ${BRANCH}|}"
-          echo PATTERN
-          sed -i "$PATTERN" .github/actions/count-votes/action.yml
+          echo ${PATTERN}
+          sed -i "${PATTERN}" .github/actions/count-votes/action.yml
           sed -i "s|count-votes@main|count-votes@'$RELEASE'|" .github/workflows/receive-votes.yml
 
           git add .github
-          git commit -m "📝 Update action references for ${RELEASE}"
+          git commit -m "📝 Update action references for ${VERSION}"
           git push --set-upstream origin ${BRANCH}
 
-          gh release create "$RELEASE" \
-              --title "Release $RELEASE" \
+          gh release create "${VERSION}" \
+              --title "Release ${VERSION}" \
               --target ${BRANCH} \
               --verify-tag
 
-          gh release upload "$RELEASE" --clobber \
+          gh release upload "${VERSION}" --clobber \
             './dist/genIndex.js#genIndex.js' \
             './dist/votes.js#votes.js'
