@@ -1,7 +1,5 @@
 # Open votes
 
-*Last updated: <%= new Date().toUTCString() %>[^1]*
-
 <table>
 <tr><th>Progress</th><th>Details</th></tr>
 <%- it.forEach(function(e) { %>
