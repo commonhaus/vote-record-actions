@@ -67,13 +67,11 @@ jobs:
           INPUT_VERSION: ${{ github.event.inputs.version }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          VERSION=$(npm version ${INPUT_VERSION} -m "🔖 %s" --tag-version-prefix="")
+          VERSION=$(npm version ${INPUT_VERSION} --tag-version-prefix="" --no-git-tag-version)
 
           # Update references from main to the new release branch
           sed -i "s|VOTE_ACTIONS_RELEASE: snapshot|VOTE_ACTIONS_RELEASE: '$VERSION'|" actions/count-votes/action.yml
-          sed -i "s|count-votes@main|count-votes@'$VERSION'|" .github/workflows/receive-votes.yml
-
-          git push && git push --tags
+          sed -i "s|count-votes@main|count-votes@$VERSION|" .github/workflows/receive-votes.yml
 
           echo ${VERSION}
           BRANCH=release/${VERSION}
@@ -84,6 +82,9 @@ jobs:
           git add .github actions
           git commit -m "📝 Update action references for ${VERSION}"
           git push --set-upstream origin ${BRANCH}
+
+          git tag $VERSION
+          git push --tags
 
           gh release create "${VERSION}" \
               --title "Release ${VERSION}" \
