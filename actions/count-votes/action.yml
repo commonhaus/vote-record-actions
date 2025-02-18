@@ -47,6 +47,11 @@ runs:
         git config user.name "${{ inputs.bot-name }}"
         git config user.email "${{ inputs.bot-email }}"
 
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
     - name: Download Compiled JS from Release
       shell: bash
       env:
