@@ -55,7 +55,7 @@ runs:
     - name: Download Compiled JS from Release
       shell: bash
       env:
-        VOTE_ACTIONS_RELEASE: snapshot
+        VOTE_ACTIONS_RELEASE: '1.0.3'
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         echo "Downloading ${VOTE_ACTIONS_RELEASE}"
