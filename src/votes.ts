@@ -38,10 +38,12 @@ if (!config.jsonDir || !config.options.repositories) {
     process.exit(1);
 }
 
-if (!existsSync(config.jsonDir)) {
+if (config.jsonDir && !existsSync(config.jsonDir)) {
+    console.log("Creating", config.jsonDir);
     mkdirSync(config.jsonDir, { recursive: true });
 }
-if (!existsSync(config.markdownDir)) {
+if (config.markdownDir && !existsSync(config.markdownDir)) {
+    console.log("Creating", config.markdownDir);
     mkdirSync(config.markdownDir, { recursive: true });
 }
 
