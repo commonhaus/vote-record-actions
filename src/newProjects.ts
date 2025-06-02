@@ -43,7 +43,9 @@ const checkboxMap: Record<string, Record<string, string>> = {};
 
 for (const item of issues) {
     const body = item.body?.split("\n") || [];
-    console.log(`Processing issue: ${item.title} (${item.id}): ${body.length}`);
+    console.log(
+        `\n\n### Processing issue: ${item.title} (${item.id}): ${body.length}`,
+    );
     const project = item.title.replace("Project onboarding: ", "").trim();
     projectList.push(project);
     projectIssueMap[project] = `[${project}, #${item.number}](${item.url})`;
@@ -52,7 +54,8 @@ for (const item of issues) {
         if (match) {
             const [_, checked, lineItem] = match;
             const cleanLineItem = stripMarkdownLinks(lineItem.trim());
-            checkboxMap[cleanLineItem] = checkboxMap[lineItem] || {};
+            checkboxMap[cleanLineItem] = checkboxMap[cleanLineItem] || {};
+            console.log(" - ", checked, `|${cleanLineItem}|`, project);
             switch (checked) {
                 case "x":
                     checkboxMap[cleanLineItem][project] = "✅";
