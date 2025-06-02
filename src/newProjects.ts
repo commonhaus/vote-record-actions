@@ -29,9 +29,6 @@ const jsonData = runGraphQL(issueQuery, ["-F", `searchQuery=${query}`]);
 const result: CombinedResult = JSON.parse(jsonData);
 const issues = result.data.issuesAndPRs.nodes || [];
 
-const checkboxMap: Record<string, Record<string, string>> = {};
-const projectMap: Record<string, string> = {};
-
 function stripMarkdownLinks(text: string): string {
     // Replace [label][ref] and [label](url) with just label
     return text
@@ -40,11 +37,16 @@ function stripMarkdownLinks(text: string): string {
         .replace(/\[\^[^\]]+\]/g, ""); // [^ref]
 }
 
+const projectList = [];
+const projectIssueMap: Record<string, string> = {};
+const checkboxMap: Record<string, Record<string, string>> = {};
+
 for (const item of issues) {
     const body = item.body?.split("\n") || [];
     console.log(`Processing issue: ${item.title} (${item.id}): ${body.length}`);
     const project = item.title.replace("Project onboarding: ", "").trim();
-    projectMap[project] = `${project.charAt(0)}^[${project}]`;
+    projectList.push(project);
+    projectIssueMap[project] = `[${project}, #${item.number}](${item.url})`;
     for (const line of body) {
         const match = checkboxRegex.exec(line);
         if (match) {
@@ -69,7 +71,11 @@ for (const item of issues) {
     }
 }
 
-const projects = Object.keys(projectMap).sort();
+projectList.sort();
+const projectMap: Record<string, string> = {};
+for (const [idx, project] of projectList.entries()) {
+    projectMap[project] = `${project.charAt(0)}[^${idx + 1}]`;
+}
 
 const report = [];
 report.push("# Project Onboarding Checklist Report");
@@ -94,7 +100,7 @@ for (const line of templateText) {
 
         if (status) {
             row.push(cleanLineItem);
-            for (const key of projects) {
+            for (const key of projectList) {
                 row.push(status[key] || "_");
             }
             const rowString = row.join(" | ");
@@ -103,6 +109,11 @@ for (const line of templateText) {
             }
         }
     }
+}
+
+report.push("");
+for (const [idx, project] of projectList.entries()) {
+    report.push(`[^${idx + 1}]: ${projectIssueMap[project] || project}`);
 }
 
 const markdownDir = process.argv[2];
