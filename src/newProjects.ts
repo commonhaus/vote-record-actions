@@ -1,0 +1,120 @@
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import path, { dirname } from "node:path";
+import type { CombinedResult, TextResult } from "./@types";
+import { runGraphQL } from "./lib/voteResults";
+
+const usage = "Usage: node ./dist/newProjects.js mdDir";
+
+const scriptRoot = dirname(import.meta.dirname);
+const issueQuery = path.join(
+    scriptRoot, // parent of dist dir
+    "graphql/query.newProject.graphql",
+);
+const templateQuery = path.join(
+    scriptRoot, // parent of dist dir
+    "graphql/query.newProjectTemplate.graphql",
+);
+
+const templateData = runGraphQL(templateQuery, []);
+const templateContent: TextResult = JSON.parse(templateData);
+const templateText =
+    templateContent.data?.repository?.content?.text.split("\n") || [];
+console.log(`Template text has ${templateText.length} lines.`);
+
+const checkboxRegex = /^\s*-\s*\[(.)\]\s*([^(]+).*$/;
+const query =
+    'repo:commonhaus/foundation-internal type:issue "Project onboarding:" is:open';
+
+const jsonData = runGraphQL(issueQuery, ["-F", `searchQuery=${query}`]);
+const result: CombinedResult = JSON.parse(jsonData);
+const issues = result.data.issuesAndPRs.nodes || [];
+
+const checkboxMap: Record<string, Record<string, string>> = {};
+const projectMap: Record<string, string> = {};
+
+function stripMarkdownLinks(text: string): string {
+    // Replace [label][ref] and [label](url) with just label
+    return text
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // [label](url)
+        .replace(/\[([^\]]+)\]\[[^\]]*\]/g, "$1") // [label][ref]
+        .replace(/\[\^[^\]]+\]/g, ""); // [^ref]
+}
+
+for (const item of issues) {
+    const body = item.body?.split("\n") || [];
+    console.log(`Processing issue: ${item.title} (${item.id}): ${body.length}`);
+    const project = item.title.replace("Project onboarding: ", "").trim();
+    projectMap[project] = `${project.charAt(0)}^[${project}]`;
+    for (const line of body) {
+        const match = checkboxRegex.exec(line);
+        if (match) {
+            const [_, checked, lineItem] = match;
+            const cleanLineItem = stripMarkdownLinks(lineItem.trim());
+            checkboxMap[cleanLineItem] = checkboxMap[lineItem] || {};
+            switch (checked) {
+                case "x":
+                    checkboxMap[cleanLineItem][project] = "✅";
+                    break;
+                case " ":
+                    checkboxMap[cleanLineItem][project] = "_";
+                    break;
+                case "-":
+                    checkboxMap[cleanLineItem][project] = "N/A";
+                    break;
+                default:
+                    checkboxMap[cleanLineItem][project] = checked;
+                    break;
+            }
+        }
+    }
+}
+
+const projects = Object.keys(projectMap).sort();
+
+const report = [];
+report.push("# Project Onboarding Checklist Report");
+report.push("");
+report.push(`| Item | ${Object.values(projectMap).sort().join(" | ")} |`);
+report.push(
+    `|-----| ${Object.keys(projectMap)
+        .map(() => "-----")
+        .join("|")} |`,
+);
+
+const sortedLineItems = [];
+for (const line of templateText) {
+    const match = checkboxRegex.exec(line);
+    if (match) {
+        const row = [];
+        const [_, _checked, lineItem] = match;
+        const cleanLineItem = stripMarkdownLinks(lineItem.trim());
+        sortedLineItems.push(cleanLineItem);
+        const status = checkboxMap[cleanLineItem];
+        delete checkboxMap[cleanLineItem];
+
+        if (status) {
+            row.push(cleanLineItem);
+            for (const key of projects) {
+                row.push(status[key] || "_");
+            }
+            const rowString = row.join(" | ");
+            if (rowString.includes("_")) {
+                report.push(`|${row.join(" | ")}|`);
+            }
+        }
+    }
+}
+
+const markdownDir = process.argv[2];
+if (markdownDir && !existsSync(markdownDir)) {
+    mkdirSync(markdownDir, { recursive: true });
+}
+
+writeFileSync(`${markdownDir}/new-projects.md`, `${report.join("\n")}\n`);
+
+if (Object.keys(checkboxMap).length > 0) {
+    writeFileSync(
+        `${markdownDir}/new-projects-leftovers.md`,
+        `# Misaligned checklist items\n\nValid items:\n\n- ${sortedLineItems.join("\n- ")}\n\n\`\`\`json\n${JSON.stringify(checkboxMap, null, 2)}\n\`\`\``,
+    );
+}

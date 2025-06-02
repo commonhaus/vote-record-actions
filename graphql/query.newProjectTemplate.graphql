@@ -1,0 +1,9 @@
+{
+  repository(owner: "commonhaus", name: "foundation-internal") {
+    content: object(expression: "main:.github/ISSUE_TEMPLATE/new-project-checklist.md") {
+      ... on Blob {
+        text
+      }
+    }
+  }
+}

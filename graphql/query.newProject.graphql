@@ -1,0 +1,24 @@
+query IssueSearch(
+  $searchQuery: String!
+) {
+  issuesAndPRs: search(
+    query: $searchQuery,
+    type: ISSUE,
+    first: 50
+  ) {
+    nodes {
+      ... on Issue {
+        id
+        title
+        number
+        closed
+        closedAt
+        url
+        body
+        repository {
+          nameWithOwner
+        }
+      }
+    }
+  }
+}

@@ -12,12 +12,11 @@ export interface VoteConfig {
     };
 }
 
-interface Problem {
+export interface Problem {
     path: string[];
     explanation: string;
 }
-
-interface Error {
+export interface Error {
     message: string;
     extensions?: {
         value: string;
@@ -28,13 +27,23 @@ interface Error {
         column: number;
     }[];
 }
-interface CombinedResult {
+export interface TextResult {
     errors?: Error[];
     data: {
-        issuesAndPRs: {
+        repository: {
+            content: {
+                text: string;
+            };
+        };
+    };
+}
+export interface CombinedResult {
+    errors?: Error[];
+    data: {
+        issuesAndPRs?: {
             nodes: ItemWithComments[];
         };
-        discussions: {
+        discussions?: {
             nodes: ItemWithComments[];
         };
     };
