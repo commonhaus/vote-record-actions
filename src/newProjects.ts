@@ -30,11 +30,14 @@ const result: CombinedResult = JSON.parse(jsonData);
 const issues = result.data.issuesAndPRs.nodes || [];
 
 function stripMarkdownLinks(text: string): string {
-    // Replace [label][ref] and [label](url) with just label
+    // Replace [label](url) and [label][ref] with just label
+    // Remove footnote references like [^p]
+    // Remove trailing comments after --
     return text
         .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // [label](url)
         .replace(/\[([^\]]+)\]\[[^\]]*\]/g, "$1") // [label][ref]
-        .replace(/\[\^[^\]]+\]/g, ""); // [^ref]
+        .replace(/\[\^[^\]]+\]/g, "") // [^footnote]
+        .replace(/\s*--.*$/g, ""); // trailing comments after --
 }
 
 const projectList = [];
