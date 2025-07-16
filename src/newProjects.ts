@@ -86,6 +86,10 @@ for (const [idx, project] of projectList.entries()) {
 const report = [];
 report.push("# Project Onboarding Checklist Report");
 report.push("");
+report.push(
+    "Details and instructions are in project-specific issues (see footnotes)",
+);
+report.push("");
 report.push(`| Item | ${Object.values(projectMap).sort().join(" | ")} |`);
 report.push(
     `|-----| ${Object.keys(projectMap)
