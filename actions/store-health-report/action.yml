@@ -1,5 +1,5 @@
-name: new-projects
-description: Aggregate new project checklists
+name: 'Store Health Reports'
+description: 'Store project health reports from repository dispatch events'
 
 inputs:
   bot-email:
@@ -10,13 +10,20 @@ inputs:
     default: 'GitHub Action'
   commit-message:
     description: 'Commit message'
-    default: '📊 Auto-update new project report'
+    default: '🩺 Auto-update health report'
   branch:
     description: 'Branch to push to'
     default: 'main'
-  markdown_dir:
-    description: Directory for generated markdown content
+  reports:
+    description: 'JSON object containing health reports'
+    required: true
+  start_date:
+    description: 'Start date in YYYY-MM-DD format'
+    required: true
+  report_directory:
+    description: 'Directory to store reports'
     required: false
+    default: 'reports'
   vote_actions_release:
     description: published version of shared actions
     required: false
@@ -25,7 +32,7 @@ inputs:
 outputs:
   report_updated:
     description: True if changes to report were made
-    value: ${{ steps.git_new_project.outputs.updated }}
+    value: ${{ steps.git_health_report.outputs.updated }}
 
 runs:
   using: "composite"
@@ -60,19 +67,21 @@ runs:
         popd
         find vote-record-actions
 
-    - name: Git update project report
-      id: git_new_project
+    - name: Git store project health reports
+      id: git_health_report
       shell: bash
       env:
         COMMIT_MSG:   ${{ inputs.commit-message }}
         GITHUB_TOKEN: ${{ github.token }}
-        MD_DIR:       ${{ github.workspace }}/${{ inputs.markdown_dir }}
+        REPORT_DIR:   ${{ github.workspace }}/${{ inputs.report_directory }}
+        REPORTS:      ${{ inputs.reports }}
+        START_DATE:   ${{ inputs.start_date }}
 
       run: |
-        # collect vote results from recently updated issues, prs, discussions
-        node vote-record-actions/dist/newProjects.js "${MD_DIR}"
+        node vote-record-actions/dist/healthReports.js
 
-        git add -A -- "${MD_DIR}"
+        # Add all files in the reports directory (handles new files)
+        git add "${{ inputs.report_directory }}"
 
         if git diff --quiet HEAD; then
           echo "-- No changes -- "
@@ -83,3 +92,5 @@ runs:
           git push
           echo "updated=true" >> $GITHUB_OUTPUT
         fi
+
+

@@ -32,6 +32,10 @@ inputs:
   vote_comment_bot:
     description: 'login of vote counting bot'
     required: false
+  vote_actions_release:
+    description: published version of shared actions
+    required: false
+    default: snapshot
 
 outputs:
   votes_updated:
@@ -55,7 +59,7 @@ runs:
     - name: Download Compiled JS from Release
       shell: bash
       env:
-        VOTE_ACTIONS_RELEASE: snapshot
+        VOTE_ACTIONS_RELEASE: ${{ inputs.vote_actions_release }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         echo "Downloading ${VOTE_ACTIONS_RELEASE}"
