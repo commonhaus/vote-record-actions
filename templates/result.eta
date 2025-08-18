@@ -30,7 +30,7 @@ This vote was [closed](<%= it.voteData.manualCloseComments.url %>) by [<%= it.vo
 |---------------------|-------------|------------|----------------|
 <%- for (const [k, category] of it.sortedCategories) {
     const reactions = category.reactions.length ? ` (${category.reactions.join(", ")})` : '';
-    const team = category.team.map(v => `[${v.login}](${v.url})`).join(', ');
+    const team = category.team?.map(v => `[${v.login}](${v.url})`).join(', ') || '';
 %>
 | <%= k %><%= reactions %> | <%= category.total %> | <%= category.teamTotal %> | <%= team %> |
 <%- } %>
