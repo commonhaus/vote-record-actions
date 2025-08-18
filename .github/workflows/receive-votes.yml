@@ -61,7 +61,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.branch }}
 
-      - uses: commonhaus/vote-record-actions/actions/count-votes@main
+      - uses: commonhaus/vote-record-actions/actions/count-votes@1.0.5
         id: count-votes
         with:
           commit-message: ${{ inputs.commit-message }}
