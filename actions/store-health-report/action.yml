@@ -83,14 +83,19 @@ runs:
         # Add all files in the reports directory (handles new files)
         git add "${{ inputs.report_directory }}"
 
-        if git diff --quiet HEAD; then
+        if git diff --staged --quiet; then
           echo "-- No changes -- "
         else
-          # commit and push vote results
           git commit -am "${COMMIT_MSG}"
-          git pull --rebase
-          git push
-          echo "updated=true" >> $GITHUB_OUTPUT
+          for i in {1..5}; do
+            if git pull --rebase && git push; then
+              echo "✅ Successfully pushed"
+              echo "updated=true" >> $GITHUB_OUTPUT
+              break
+            else
+              echo "⚠️ Push failed, retrying in $((i * 2)) seconds..."
+              sleep $((i * 2))
+            fi
+          done
         fi
-
 
