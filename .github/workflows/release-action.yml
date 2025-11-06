@@ -29,14 +29,14 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
           # Fine-grained PAT with contents:write and workflows:write scopes
           token: ${{ secrets.CF_VOTES_RELEASE_ACTION }}
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '20'
           cache: 'npm'
@@ -71,9 +71,13 @@ jobs:
           INPUT_VERSION: ${{ github.event.inputs.version }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          VERSION=$(npm version ${INPUT_VERSION} --tag-version-prefix="" --no-git-tag-version)
+          echo "version: ${{ github.event.inputs.version }}"
+          echo "retry: ${{ github.event.inputs.retry }}"
 
-          echo ${VERSION}
+
+          VERSION=$(npm version ${INPUT_VERSION} --tag-version-prefix="" --no-git-tag-version)
+          echo ${INPUT_VERSION} -- ${VERSION}
+
           BRANCH=release/${VERSION}
 
           if git rev-parse "refs/tags/$VERSION" > /dev/null 2>&1; then
@@ -85,6 +89,11 @@ jobs:
               exit 1
             fi
           fi
+
+          git add package*.json
+          git status
+          git commit -m "🔖 $VERSION"
+          git push
 
           # Update references from main to the new release branch
           sed -i "s|VOTE_ACTIONS_RELEASE: snapshot|VOTE_ACTIONS_RELEASE: '$VERSION'|" actions/count-votes/action.yml
