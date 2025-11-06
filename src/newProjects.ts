@@ -133,9 +133,7 @@ if (markdownDir && !existsSync(markdownDir)) {
 
 writeFileSync(`${markdownDir}/new-projects.md`, `${report.join("\n")}\n`);
 
-if (Object.keys(checkboxMap).length > 0) {
-    writeFileSync(
-        `${markdownDir}/new-projects-leftovers.md`,
-        `# Misaligned checklist items\n\nValid items:\n\n- ${sortedLineItems.join("\n- ")}\n\n\`\`\`json\n${JSON.stringify(checkboxMap, null, 2)}\n\`\`\``,
-    );
-}
+writeFileSync(
+    `${markdownDir}/new-projects-leftovers.md`,
+    `# Misaligned checklist items\n\nValid items:\n\n- ${sortedLineItems.join("\n- ")}\n\n\`\`\`json\n${JSON.stringify(checkboxMap, null, 2)}\n\`\`\``,
+);
