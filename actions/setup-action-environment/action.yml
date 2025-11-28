@@ -1,0 +1,49 @@
+name: 'Setup Action Environment'
+description: 'Configures git, sets up Node.js, and downloads compiled actions from release'
+
+inputs:
+  bot-email:
+    description: 'Email for git config'
+    default: '41898282+github-actions[bot]@users.noreply.github.com'
+    required: false
+  bot-name:
+    description: 'Name for git config'
+    default: 'GitHub Action'
+    required: false
+  vote_actions_release:
+    description: 'Published version of shared actions'
+    required: false
+    default: 'snapshot'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config user.name "${{ inputs.bot-name }}"
+        git config user.email "${{ inputs.bot-email }}"
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Download Compiled JS from Release
+      shell: bash
+      env:
+        VOTE_ACTIONS_RELEASE: ${{ inputs.vote_actions_release }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        echo "Downloading ${VOTE_ACTIONS_RELEASE}"
+        mkdir -p vote-record-actions
+        pushd vote-record-actions
+
+        gh release download ${VOTE_ACTIONS_RELEASE} \
+          --repo commonhaus/vote-record-actions \
+          --pattern "*.tar.gz"
+
+        tar -xzf vote-record-actions-${VOTE_ACTIONS_RELEASE}.tar.gz
+
+        popd
+        find vote-record-actions

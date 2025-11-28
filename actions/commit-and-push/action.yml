@@ -1,0 +1,53 @@
+name: 'Commit and Push with Retry'
+description: 'Commits staged changes and pushes with exponential backoff retry logic'
+
+inputs:
+  commit-message:
+    description: 'Commit message'
+    required: true
+  branch:
+    description: 'Branch to push to'
+    default: 'main'
+    required: false
+  max-retries:
+    description: 'Maximum number of retry attempts'
+    default: '5'
+    required: false
+
+outputs:
+  updated:
+    description: 'True if changes were committed and pushed'
+    value: ${{ steps.commit_push.outputs.updated }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Commit and push with retry
+      id: commit_push
+      shell: bash
+      env:
+        COMMIT_MSG: ${{ inputs.commit-message }}
+        BRANCH: ${{ inputs.branch }}
+        MAX_RETRIES: ${{ inputs.max-retries }}
+      run: |
+        if git diff --staged --quiet; then
+          echo "-- No changes -- "
+          exit 0
+        fi
+
+        git commit -m "${COMMIT_MSG}"
+
+        for i in $(seq 1 ${MAX_RETRIES}); do
+          if git pull --rebase && git push origin ${BRANCH}; then
+            echo "✅ Successfully pushed"
+            echo "updated=true" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            if [ $i -eq ${MAX_RETRIES} ]; then
+              echo "❌ Failed to push after ${MAX_RETRIES} attempts"
+              exit 1
+            fi
+            echo "⚠️ Push failed (attempt $i/${MAX_RETRIES}), retrying in $((i * 2)) seconds..."
+            sleep $((i * 2))
+          fi
+        done

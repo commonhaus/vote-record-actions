@@ -32,70 +32,33 @@ inputs:
 outputs:
   report_updated:
     description: True if changes to report were made
-    value: ${{ steps.git_health_report.outputs.updated }}
+    value: ${{ steps.commit_push.outputs.updated }}
 
 runs:
   using: "composite"
   steps:
-    - name: Configure Git
-      shell: bash
-      run: |
-        git config user.name "${{ inputs.bot-name }}"
-        git config user.email "${{ inputs.bot-email }}"
-
-    - name: Use Node.js
-      uses: actions/setup-node@v4
+    - name: Setup environment
+      uses: ./actions/setup-action-environment
       with:
-        node-version: '20'
+        bot-email: ${{ inputs.bot-email }}
+        bot-name: ${{ inputs.bot-name }}
+        vote_actions_release: ${{ inputs.vote_actions_release }}
 
-    - name: Download Compiled JS from Release
+    - name: Process health reports
       shell: bash
       env:
-        VOTE_ACTIONS_RELEASE: ${{ inputs.vote_actions_release }}
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        echo "Downloading ${VOTE_ACTIONS_RELEASE}"
-        mkdir -p vote-record-actions
-        pushd vote-record-actions
-
-        gh release download ${VOTE_ACTIONS_RELEASE} \
-          --repo commonhaus/vote-record-actions \
-          --pattern "*.tar.gz" \
-
-        tar -xzf vote-record-actions-${VOTE_ACTIONS_RELEASE}.tar.gz
-
-        popd
-        find vote-record-actions
-
-    - name: Git store project health reports
-      id: git_health_report
-      shell: bash
-      env:
-        COMMIT_MSG:   ${{ inputs.commit-message }}
         GITHUB_TOKEN: ${{ github.token }}
         REPORT_DIR:   ${{ github.workspace }}/${{ inputs.report_directory }}
         REPORTS:      ${{ inputs.reports }}
         START_DATE:   ${{ inputs.start_date }}
-
       run: |
         node vote-record-actions/dist/healthReports.js
-
-        # Add all files in the reports directory (handles new files)
         git add "${{ inputs.report_directory }}"
 
-        if git diff --staged --quiet; then
-          echo "-- No changes -- "
-        else
-          git commit -am "${COMMIT_MSG}"
-          for i in {1..5}; do
-            if git pull --rebase && git push; then
-              echo "✅ Successfully pushed"
-              echo "updated=true" >> $GITHUB_OUTPUT
-              break
-            else
-              echo "⚠️ Push failed, retrying in $((i * 2)) seconds..."
-              sleep $((i * 2))
-            fi
-          done
-        fi
+    - name: Commit and push changes
+      id: commit_push
+      uses: ./actions/commit-and-push
+      with:
+        commit-message: ${{ inputs.commit-message }}
+        branch: ${{ inputs.branch }}
 
