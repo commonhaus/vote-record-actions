@@ -7,14 +7,20 @@
     "format": "npx @biomejs/biome format ./src",
     "lint": "npx @biomejs/biome lint ./src",
     "prebuild": "npx @biomejs/biome check ./src",
-    "build": "node esbuild.config.mjs"
+    "build": "node esbuild.config.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "type": "module",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/node": "^20.12.12",
+    "@vitest/ui": "^4.0.14",
     "esbuild": "^0.25.0",
     "typescript": "^5.4.5",
+    "vitest": "^4.0.14",
     "yaml": "^2.3.4"
   },
   "dependencies": {

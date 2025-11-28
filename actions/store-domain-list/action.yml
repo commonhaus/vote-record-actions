@@ -1,0 +1,70 @@
+name: 'Store Domain List'
+description: 'Write domain list from repository dispatch events'
+
+inputs:
+  bot-email:
+    description: 'Email for git config'
+    default: '41898282+github-actions[bot]@users.noreply.github.com'
+  bot-name:
+    description: 'Name for git config'
+    default: 'GitHub Action'
+  commit-message:
+    description: 'Commit message'
+    default: '📋 Auto-update domain list'
+  branch:
+    description: 'Branch to push to'
+    default: 'main'
+  vote_actions_release:
+    description: published version of shared actions
+    required: false
+    default: snapshot
+
+  list_dir:
+    description: 'Directory to store reports'
+    required: false
+    default: 'checklists'
+  calendar_dir:
+    description: 'Break domain expiry into annual files'
+    required: false
+
+  domain_list:
+    description: 'JSON object containing domain list'
+    required: true
+
+outputs:
+  updated:
+    description: True if changes where made
+    value: ${{ steps.commit_push.outputs.updated }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup environment
+      uses: ./actions/setup-action-environment
+      with:
+        bot-email: ${{ inputs.bot-email }}
+        bot-name: ${{ inputs.bot-name }}
+        vote_actions_release: ${{ inputs.vote_actions_release }}
+
+    - name: Process domain data
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        CALENDAR:     ${{ inputs.calendar_dir }}
+        LIST:         ${{ inputs.list_dir }}
+        DOMAIN_LIST:  ${{ inputs.domain_list }}
+      run: |
+        node vote-record-actions/dist/domainsWriteList.js
+        git add "${LIST}"
+
+        if [ -n "${CALENDAR}" ]; then
+          node vote-record-actions/dist/domainsUpdateCalendars.js
+          git add "${CALENDAR}"
+        fi
+
+    - name: Commit and push changes
+      id: commit_push
+      uses: ./actions/commit-and-push
+      with:
+        commit-message: ${{ inputs.commit-message }}
+        branch: ${{ inputs.branch }}

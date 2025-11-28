@@ -1,5 +1,14 @@
 // TYPES
 
+export interface DomainRecord {
+    name: string;
+    expires: string | null;
+    isExpired: boolean;
+    isLocked: boolean;
+    autoRenew: boolean;
+    isOurDNS: boolean;
+}
+
 export interface VoteConfig {
     bot: string;
     jsonDir?: string;
