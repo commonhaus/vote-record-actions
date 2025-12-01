@@ -9,7 +9,7 @@ This action receives health report data via repository dispatch events and store
 ## Usage
 
 ```yaml
-- uses: ./actions/store-health-report
+- uses: commonhaus/vote-record-actions/actions/store-health-report
   with:
     reports: ${{ github.event.client_payload.reports }}
     start_date: '2024-01-15'
@@ -54,7 +54,8 @@ This action receives health report data via repository dispatch events and store
 ## File Organization
 
 Reports are stored in the following structure:
-```
+
+```text
 {report_directory}/
 └ {start_date}/
   ├ owner1_repo1.json
@@ -70,6 +71,7 @@ Reports are stored in the following structure:
 - Valid JSON health report data
 
 ### Storage Repository (This Action)
+
 ```yaml
 name: Store Health Reports
 on:
@@ -85,7 +87,7 @@ jobs:
 
     - uses: actions/checkout@v4
     
-    - uses: ./actions/store-health-report
+    - uses: commonhaus/vote-record-actions/actions/store-health-report
       with:
         reports: ${{ github.event.client_payload.reports }}
         start_date: ${{ github.event.client_payload.start_date }}
@@ -95,6 +97,7 @@ jobs:
 ## Environment Variables
 
 The action expects these environment variables to be set:
+
 - `REPORTS`: JSON string containing health report data
 - `START_DATE`: Report collection start date (YYYY-MM-DD format)  
 - `REPORT_DIR`: Base directory for storing reports
@@ -102,6 +105,7 @@ The action expects these environment variables to be set:
 ## Error Handling
 
 The action will exit with an error if:
+
 - Required environment variables are missing
 - JSON parsing of reports data fails
 - File system operations fail

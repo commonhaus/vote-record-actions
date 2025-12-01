@@ -9,7 +9,7 @@ This action searches for project onboarding issues in the `commonhaus/foundation
 ## Usage
 
 ```yaml
-- uses: ./actions/new-projects
+- uses: commonhaus/vote-record-actions/actions/new-projects
   with:
     markdown_dir: 'reports/new-projects'
 ```
@@ -91,6 +91,7 @@ jobs:
 ## Output Format
 
 The action generates markdown reports containing:
+
 - Project names and associated GitHub issue links
 - Checklist completion progress
 - Individual task status (completed/pending)
@@ -99,6 +100,7 @@ The action generates markdown reports containing:
 ## Search Query
 
 The action searches for issues using the query:
-```
+
+```text
 repo:commonhaus/foundation-internal type:issue "Project onboarding:" is:open
 ```
