@@ -79,7 +79,7 @@ export function mergeDomainsIntoCalendar(
 
     // Add domain expiries
     for (const domain of domains) {
-        if (!domain.expires) continue;
+        if (!domain || !domain.name || !domain.expires) continue;
 
         const expiryDate = new Date(domain.expires);
         if (expiryDate.getUTCFullYear() !== year) continue;
@@ -171,7 +171,7 @@ export function updateCalendarFiles(
     // Find all unique years from domain expiry dates
     const years = new Set<number>();
     for (const domain of domains) {
-        if (domain.expires) {
+        if (domain?.expires) {
             const year = new Date(domain.expires).getUTCFullYear();
             years.add(year);
         }

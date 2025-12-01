@@ -24,8 +24,18 @@ export function writeDomainListMarkdown(
         throw error;
     }
 
-    // Sort domains alphabetically by name
-    const sortedDomains = [...domains].sort((a, b) =>
+    // Filter out invalid entries and sort domains alphabetically by name
+    const validDomains = domains.filter((d) => d?.name);
+    console.log(domains, validDomains);
+    const filteredCount = domains.length - validDomains.length;
+
+    if (filteredCount > 0) {
+        console.warn(
+            `⚠️  Filtered out ${filteredCount} invalid domain entries (missing name or undefined)`,
+        );
+    }
+
+    const sortedDomains = [...validDomains].sort((a, b) =>
         a.name.localeCompare(b.name),
     );
 
