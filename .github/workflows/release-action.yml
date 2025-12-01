@@ -99,6 +99,10 @@ jobs:
           sed -i "s|VOTE_ACTIONS_RELEASE: snapshot|VOTE_ACTIONS_RELEASE: '$VERSION'|" actions/count-votes/action.yml
           sed -i "s|count-votes@main|count-votes@$VERSION|" .github/workflows/receive-votes.yml
 
+          # Update internal composite action references from @main to @VERSION
+          sed -i "s|setup-action-environment@main|setup-action-environment@$VERSION|g" actions/*/action.yml
+          sed -i "s|commit-and-push@main|commit-and-push@$VERSION|g" actions/*/action.yml
+
           # Create a new branch for the release
           git checkout -b ${BRANCH}
 
