@@ -25,6 +25,7 @@ export function writeDomainListMarkdown(
     }
 
     // Filter out invalid entries and sort domains alphabetically by name
+    console.log(domains);
     const validDomains = domains.filter((d) => d?.name);
     console.log(domains, validDomains);
     const filteredCount = domains.length - validDomains.length;
@@ -83,6 +84,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log("DOMAIN_LIST type:", typeof process.env.DOMAIN_LIST);
     console.log("DOMAIN_LIST length:", process.env.DOMAIN_LIST?.length);
     console.log("LIST_DIR:", process.env.LIST_DIR);
+    console.log(process.env.DOMAIN_LIST);
 
     try {
         const domainList = JSON.parse(
