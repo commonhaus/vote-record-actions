@@ -38,7 +38,7 @@ runs:
   using: "composite"
   steps:
     - name: Setup environment
-      uses: commonhaus/vote-record-actions/actions/setup-action-environment
+      uses: commonhaus/vote-record-actions/actions/setup-action-environment@main
       with:
         bot-email: ${{ inputs.bot-email }}
         bot-name: ${{ inputs.bot-name }}
@@ -57,7 +57,7 @@ runs:
 
     - name: Commit and push changes
       id: commit_push
-      uses: commonhaus/vote-record-actions/actions/commit-and-push
+      uses: commonhaus/vote-record-actions/actions/commit-and-push@main
       with:
         commit-message: ${{ inputs.commit-message }}
         branch: ${{ inputs.branch }}
