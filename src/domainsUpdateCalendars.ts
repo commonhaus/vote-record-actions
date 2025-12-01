@@ -235,9 +235,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log("CALENDAR_DIR:", process.env.CALENDAR_DIR);
 
     try {
-        const domainList = JSON.parse(
-            process.env.DOMAIN_LIST || "[]",
-        ) as DomainRecord[];
+        let domainList = JSON.parse(process.env.DOMAIN_LIST || "[]") as
+            | DomainRecord[]
+            | string;
+
+        // Handle double-encoded JSON (when GitHub Actions passes JSON as a string)
+        if (typeof domainList === "string") {
+            console.log("⚠️  Detected double-encoded JSON, parsing again...");
+            domainList = JSON.parse(domainList) as DomainRecord[];
+        }
+
         console.log("Parsed domain count:", domainList.length);
 
         const baseDirectory = process.env.CALENDAR_DIR;
