@@ -51,7 +51,9 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
         CALENDAR:     ${{ inputs.calendar_dir }}
+        CALENDAR_DIR: ${{ github.workspace }}/${{ inputs.calendar_dir }}
         LIST:         ${{ inputs.list_dir }}
+        LIST_DIR:     ${{ github.workspace }}/${{ inputs.list_dir }}
         DOMAIN_LIST:  ${{ inputs.domain_list }}
       run: |
         node vote-record-actions/dist/domainsWriteList.js
