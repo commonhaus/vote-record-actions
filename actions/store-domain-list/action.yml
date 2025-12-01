@@ -17,7 +17,7 @@ inputs:
   vote_actions_release:
     description: published version of shared actions
     required: false
-    default: snapshot
+    default: latest
 
   list_dir:
     description: 'Directory to store reports'

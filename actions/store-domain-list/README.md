@@ -30,7 +30,7 @@ It's designed to help manage domain portfolios by providing a clear overview of 
 | `date` | Date in YYYY-MM-DD format | Yes | - |
 | `list_dir` | Directory to store domain list markdown file | No | `checklists` |
 | `calendar_dir` | Directory to store calendar files (if unset, calendars won't be generated) | No | - |
-| `vote_actions_release` | Published version of shared actions | No | `snapshot` |
+| `vote_actions_release` | Published version of shared actions | No | `latest` |
 | `bot-email` | Email for git config | No | `41898282+github-actions[bot]@users.noreply.github.com` |
 | `bot-name` | Name for git config | No | `GitHub Action` |
 | `commit-message` | Commit message | No | `📋 Auto-update domain list` |

@@ -13,7 +13,7 @@ inputs:
   vote_actions_release:
     description: 'Published version of shared actions'
     required: false
-    default: 'snapshot'
+    default: latest
 
 runs:
   using: "composite"

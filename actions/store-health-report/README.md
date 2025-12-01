@@ -23,7 +23,7 @@ This action receives health report data via repository dispatch events and store
 | `reports` | JSON object containing health reports (key: repo full name, value: report data) | Yes | - |
 | `start_date` | Start date in YYYY-MM-DD format | Yes | - |
 | `report_directory` | Directory to store reports | No | `reports` |
-| `vote_actions_release` | Published version of shared actions | No | `snapshot` |
+| `vote_actions_release` | Published version of shared actions | No | `latest` |
 | `bot-email` | Email for git config | No | `41898282+github-actions[bot]@users.noreply.github.com` |
 | `bot-name` | Name for git config | No | `GitHub Action` |
 | `commit-message` | Commit message | No | `🩺  Auto-update health report` |

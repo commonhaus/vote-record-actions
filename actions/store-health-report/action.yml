@@ -27,7 +27,7 @@ inputs:
   vote_actions_release:
     description: published version of shared actions
     required: false
-    default: snapshot
+    default: latest
 
 outputs:
   report_updated:

@@ -49,19 +49,19 @@ jobs:
           npm ci
           npm run build
 
-      - id: snapshot
-        name: Update snapshot release
+      - id: latest
+        name: Update latest release
         if: ${{ github.event_name == 'push' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          echo "Update tag for snapshot"
-          git push origin :refs/tags/snapshot
-          git tag -f snapshot
+          echo "Update tag for latest"
+          git push origin :refs/tags/latest
+          git tag -f latest
           git push --tags
 
-          echo "Update snapshot release"
-          gh release edit "snapshot" -t "snapshot" --prerelease
+          echo "Update latest release"
+          gh release edit "latest" -t "latest" --prerelease
 
       # Build the plugin
       - id: tag_release
@@ -96,7 +96,7 @@ jobs:
           git push
 
           # Update references from main to the new release branch
-          sed -i "s|VOTE_ACTIONS_RELEASE: snapshot|VOTE_ACTIONS_RELEASE: '$VERSION'|" actions/count-votes/action.yml
+          sed -i "s|VOTE_ACTIONS_RELEASE: latest|VOTE_ACTIONS_RELEASE: '$VERSION'|" actions/count-votes/action.yml
           sed -i "s|count-votes@main|count-votes@$VERSION|" .github/workflows/receive-votes.yml
 
           # Update internal composite action references from @main to @VERSION
@@ -127,7 +127,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           if [ -z ${VERSION} ]; then
-            VERSION=snapshot
+            VERSION=latest
           fi
           echo "Updating artifacts for ${VERSION}"
 
@@ -137,11 +137,11 @@ jobs:
           gh release upload "${VERSION}" --clobber \
             "vote-record-actions-${VERSION}.tar.gz#vote-record-actions-${VERSION}.tar.gz"
 
-      - id: undraft_snapshot
-        name: Un-draft Snapshot release
+      - id: undraft_latest
+        name: Un-draft latest release
         if: ${{ github.event_name == 'push' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          gh release edit snapshot --draft=false
-          gh release view snapshot
+          gh release edit latest --draft=false
+          gh release view latest
