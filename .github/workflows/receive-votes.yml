@@ -35,6 +35,11 @@ on:
         description: 'login of vote counting bot'
         type: string
         required: false
+      vote_actions_release:
+        description: 'published version of shared actions'
+        type: string
+        required: false
+        default: latest
 
     outputs:
       votes_updated:
@@ -72,3 +77,4 @@ jobs:
           markdown_dir: ${{ inputs.markdown_dir }}
           index_file: ${{ inputs.index_file }}
           vote_comment_bot: ${{ inputs.vote_comment_bot }}
+          vote_actions_release: ${{ inputs.vote_actions_release }}
