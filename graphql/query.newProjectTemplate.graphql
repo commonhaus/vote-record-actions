@@ -1,5 +1,5 @@
 {
-  repository(owner: "commonhaus", name: "foundation-internal") {
+  repository(owner: "commonhaus", name: "handbook") {
     content: object(expression: "main:.github/ISSUE_TEMPLATE/new-project-checklist.md") {
       ... on Blob {
         text

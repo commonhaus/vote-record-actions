@@ -4,7 +4,7 @@ Aggregates new project checklists by scanning GitHub issues for project onboardi
 
 ## Description
 
-This action searches for project onboarding issues in the `commonhaus/foundation-internal` repository and aggregates checklist progress into markdown reports. It tracks the status of new project applications and their onboarding progress.
+This action searches for project onboarding issues in the `commonhaus/handbook` repository and aggregates checklist progress into markdown reports. It tracks the status of new project applications and their onboarding progress.
 
 ## Usage
 
@@ -32,7 +32,7 @@ This action searches for project onboarding issues in the `commonhaus/foundation
 
 ## Features
 
-- **Issue Scanning**: Searches for "Project onboarding:" issues in foundation-internal repository
+- **Issue Scanning**: Searches for "Project onboarding:" issues in handbook repository
 - **Checklist Aggregation**: Parses checklist items from issue bodies
 - **Progress Tracking**: Monitors completion status of onboarding tasks
 - **Template Processing**: Uses project onboarding template for reference
@@ -51,7 +51,7 @@ This action searches for project onboarding issues in the `commonhaus/foundation
 ## Requirements
 
 - Node.js 20
-- GitHub token with access to `commonhaus/foundation-internal` repository
+- GitHub token with access to `commonhaus/handbook` repository
 - Write permissions to target repository
 
 ## Example Workflow
@@ -102,5 +102,5 @@ The action generates markdown reports containing:
 The action searches for issues using the query:
 
 ```text
-repo:commonhaus/foundation-internal type:issue "Project onboarding:" is:open
+repo:commonhaus/handbook type:issue "Project onboarding:" is:open
 ```

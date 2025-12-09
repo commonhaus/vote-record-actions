@@ -23,7 +23,7 @@ console.log(`Template text has ${templateText.length} lines.`);
 
 const checkboxRegex = /^\s*-\s*\[(.)\]\s*([^(]+).*$/;
 const query =
-    'repo:commonhaus/foundation-internal type:issue "Project onboarding:" is:open';
+    'repo:commonhaus/handbook type:issue "Project onboarding:" is:open';
 
 const jsonData = runGraphQL(issueQuery, ["-F", `searchQuery=${query}`]);
 const result: CombinedResult = JSON.parse(jsonData);
