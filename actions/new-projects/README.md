@@ -71,8 +71,11 @@ env:
 
 jobs:
   update_report:
-    if: startsWith("${{github.event.issue.title}}", "Project onboarding")
+    if: startsWith(github.event.issue.title, 'Project onboarding') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     concurrency:
       group: project-update
 
