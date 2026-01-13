@@ -1,6 +1,6 @@
 {
   "name": "vote-record-actions",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "scripts": {
     "fix": "npx @biomejs/biome check --write ./src",
