@@ -12,11 +12,41 @@ DOMAIN_LIST: JSON payload; Array containing domain records.
 interface CalendarEntry {
     day: number;
     description: string;
+    isPlaceholder?: boolean;
 }
 
 interface CalendarMonth {
     monthName: string;
     entries: CalendarEntry[];
+}
+
+function formatMonthEntries(
+    lines: string[],
+    monthName: string,
+    entries: CalendarEntry[],
+): void {
+    const realEntries = entries.filter((e) => !e.isPlaceholder);
+    const hasPlaceholder = entries.some((e) => e.isPlaceholder);
+
+    lines.push(`## ${monthName}`);
+    lines.push("");
+
+    if (realEntries.length === 0) {
+        // Preserve placeholder for empty sections
+        if (hasPlaceholder) {
+            lines.push("- .");
+        }
+    } else {
+        // Sort entries by day
+        const sortedEntries = [...realEntries].sort((a, b) => a.day - b.day);
+
+        for (const entry of sortedEntries) {
+            const dayStr = entry.day.toString().padStart(2, "0");
+            lines.push(`- ${dayStr}: ${entry.description}`);
+        }
+    }
+
+    lines.push("");
 }
 
 const MONTH_NAMES = [
@@ -56,6 +86,13 @@ export function parseCalendarFile(content: string): Map<string, CalendarMonth> {
                 const day = Number.parseInt(entryMatch[1], 10);
                 const description = entryMatch[2].trim();
                 currentMonth.entries.push({ day, description });
+            } else if (line.match(/^-\s+\.$/)) {
+                // Preserve placeholder entries (- .)
+                currentMonth.entries.push({
+                    day: 0,
+                    description: ".",
+                    isPlaceholder: true,
+                });
             }
         }
     }
@@ -115,39 +152,28 @@ export function formatCalendarFile(
     // First output custom sections (not in MONTH_NAMES)
     for (const [monthName, month] of months) {
         if (MONTH_NAMES.includes(monthName)) continue;
-        if (month.entries.length === 0) continue;
 
-        lines.push(`## ${monthName}`);
-        lines.push("");
+        const realEntries = month.entries.filter((e) => !e.isPlaceholder);
+        const hasPlaceholder = month.entries.some((e) => e.isPlaceholder);
 
-        // Sort entries by day
-        const sortedEntries = [...month.entries].sort((a, b) => a.day - b.day);
+        // Skip custom sections with no entries at all
+        if (realEntries.length === 0 && !hasPlaceholder) continue;
 
-        for (const entry of sortedEntries) {
-            const dayStr = entry.day.toString().padStart(2, "0");
-            lines.push(`- ${dayStr}: ${entry.description}`);
-        }
-
-        lines.push("");
+        formatMonthEntries(lines, monthName, month.entries);
     }
 
     // Then output standard months in order
     for (const monthName of MONTH_NAMES) {
         const month = months.get(monthName);
-        if (!month || month.entries.length === 0) continue;
+        if (!month) continue;
 
-        lines.push(`## ${monthName}`);
-        lines.push("");
+        const realEntries = month.entries.filter((e) => !e.isPlaceholder);
+        const hasPlaceholder = month.entries.some((e) => e.isPlaceholder);
 
-        // Sort entries by day
-        const sortedEntries = [...month.entries].sort((a, b) => a.day - b.day);
+        // Skip months with no entries and no placeholder
+        if (realEntries.length === 0 && !hasPlaceholder) continue;
 
-        for (const entry of sortedEntries) {
-            const dayStr = entry.day.toString().padStart(2, "0");
-            lines.push(`- ${dayStr}: ${entry.description}`);
-        }
-
-        lines.push("");
+        formatMonthEntries(lines, monthName, month.entries);
     }
 
     return lines.join("\n");

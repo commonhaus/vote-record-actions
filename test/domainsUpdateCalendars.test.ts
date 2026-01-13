@@ -70,8 +70,19 @@ describe("parseCalendarFile", () => {
         const result = parseCalendarFile(content);
 
         expect(result.size).toBe(2);
-        expect(result.get("May")?.entries).toHaveLength(0); // '.' is not a valid day entry
-        expect(result.get("June")?.entries).toHaveLength(0);
+        // Placeholder entries are now parsed and preserved
+        expect(result.get("May")?.entries).toHaveLength(1);
+        expect(result.get("May")?.entries[0]).toEqual({
+            day: 0,
+            description: ".",
+            isPlaceholder: true,
+        });
+        expect(result.get("June")?.entries).toHaveLength(1);
+        expect(result.get("June")?.entries[0]).toEqual({
+            day: 0,
+            description: ".",
+            isPlaceholder: true,
+        });
     });
 
     it("should handle a custom Monthly section", () => {
@@ -313,7 +324,7 @@ describe("formatCalendarFile", () => {
         expect(day22Index).toBeGreaterThan(day16Index);
     });
 
-    it("should skip empty months", () => {
+    it("should skip months with no entries and no placeholder", () => {
         const months = new Map();
         months.set("January", {
             monthName: "January",
@@ -333,6 +344,33 @@ describe("formatCalendarFile", () => {
         expect(result).toContain("## January");
         expect(result).not.toContain("## February");
         expect(result).toContain("## March");
+    });
+
+    it("should preserve placeholder entries for empty months", () => {
+        const months = new Map();
+        months.set("January", {
+            monthName: "January",
+            entries: [{ day: 24, description: "Some event" }],
+        });
+        months.set("February", {
+            monthName: "February",
+            entries: [{ day: 0, description: ".", isPlaceholder: true }],
+        });
+        months.set("March", {
+            monthName: "March",
+            entries: [{ day: 15, description: "Another event" }],
+        });
+
+        const result = formatCalendarFile(months, 2027);
+
+        expect(result).toContain("## January");
+        expect(result).toContain("## February");
+        expect(result).toContain("## March");
+
+        // February should have the placeholder
+        const lines = result.split("\n");
+        const febIndex = lines.indexOf("## February");
+        expect(lines[febIndex + 2]).toBe("- .");
     });
 
     it("should format days with leading zeros", () => {
