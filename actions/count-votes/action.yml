@@ -109,6 +109,7 @@ runs:
           # Stage the index.
           git add -A -- "${INDEX_FILE}"
         fi
+        git status
 
     - name: Commit and push changes
       id: commit_push

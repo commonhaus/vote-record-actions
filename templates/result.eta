@@ -31,8 +31,14 @@ This vote was [closed](<%= it.voteData.manualCloseComments.url %>) by [<%= it.vo
 <%- for (const [k, category] of it.sortedCategories) {
     const reactions = category.reactions.length ? ` (${category.reactions.join(", ")})` : '';
     const team = category.team?.map(v => `[${v.login}](${v.url})`).join(', ') || '';
+    const teamTotal = category.teamTotal
+        ? category.teamTotal 
+        : (category.team ? Object.keys(category.team).length : 0)
+    const total = category.total 
+        ? category.total 
+        : teamTotal + (category.otherVotes ? Object.keys(category.otherVotes).length : 0)
 %>
-| <%= k %><%= reactions %> | <%= category.total %> | <%= category.teamTotal %> | <%= team %> |
+| <%= k %><%= reactions %> | <%= total %> | <%= teamTotal %> | <%= team %> |
 <%- } %>
 | **Total** | <%= it.voteData.countedVotes %> | <%= it.voteData.groupVotes %> |  |
 <%- if (it.voteData.otherVotes && it.voteData.otherVotes.length) { %>

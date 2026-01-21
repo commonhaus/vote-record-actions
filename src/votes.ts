@@ -20,7 +20,7 @@ for (const arg of process.argv) {
         // filter out recent, not a dir
         config.options.all = arg === "all";
     } else if (arg.startsWith("--md=")) {
-        config.markdownDir = arg.slice(5);
+        config.markdownDir = arg.slice(5).replace('"', "");
     } else if (arg.startsWith("--removeTag=")) {
         config.options.removeTags = arg.slice(12).split(",");
     } else if (arg.startsWith("--bot=")) {
