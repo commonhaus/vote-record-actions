@@ -5,6 +5,7 @@ Retrieves the most recent votes from GitHub repositories and updates vote record
 ## Description
 
 This action scans specified GitHub repositories for voting activity (issues, PRs, discussions) and processes vote data to:
+
 - Store vote results as JSON files
 - Generate markdown summaries (optional)
 - Create/update index files (optional) 
@@ -35,7 +36,7 @@ This action scans specified GitHub repositories for voting activity (issues, PRs
 | `vote_comment_bot` | Login of vote counting bot | No | - |
 | `bot-email` | Email for git config | No | `41898282+github-actions[bot]@users.noreply.github.com` |
 | `bot-name` | Name for git config | No | `GitHub Action` |
-| `commit-message` | Commit message | No | `=� Auto-update GH Votes` |
+| `commit-message` | Commit message | No | `🗳️  Auto-update GH Votes` |
 | `branch` | Branch to push to | No | `main` |
 
 ## Outputs
@@ -55,6 +56,6 @@ This action scans specified GitHub repositories for voting activity (issues, PRs
 
 ## Requirements
 
-- Node.js 20
+- Node.js 24
 - GitHub token with repository access
 - Write permissions to target repository

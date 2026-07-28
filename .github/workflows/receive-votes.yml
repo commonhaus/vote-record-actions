@@ -6,7 +6,7 @@ on:
       commit-message:
         type: string
         description: 'Commit message'
-        default: '🗳️ Auto-update GH Votes'
+        default: '🗳️  Auto-update GH Votes'
       branch:
         type: string
         description: 'Branch to push to'

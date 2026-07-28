@@ -10,7 +10,7 @@ inputs:
     default: 'GitHub Action'
   commit-message:
     description: 'Commit message'
-    default: '🗳️ Auto-update GH Votes'
+    default: '🗳️  Auto-update GH Votes'
   branch:
     description: 'Branch to push to'
     default: 'main'
